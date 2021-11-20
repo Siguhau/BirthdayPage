@@ -1,4 +1,5 @@
 .App {
+  color: white;
   text-align: center;
 }
 
@@ -14,8 +15,6 @@
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,4 +34,10 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+p {
+  color: #61dafb;
+  font-size: xx-large;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
