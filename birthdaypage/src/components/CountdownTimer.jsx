@@ -53,7 +53,7 @@ export default function CountdownTimer(){
         {bursdag ? 
         <h1>Gratulerer med dagen Runar</h1> : 
         <h1>Runar har bursdag om:</h1>}
-        <p  id="countdown"></p>
+        <p aria-label=""  id="countdown"></p>
   </>
   )
 
