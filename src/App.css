@@ -37,7 +37,6 @@
 }
 
 p {
-  color: #61dafb;
-  font-size: xx-large;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  color: #fff;
+  font-size: calc(20px + 4vmin);
 }

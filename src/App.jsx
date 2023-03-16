@@ -1,14 +1,16 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import CountdownTimer from './components/CountdownTimer';
+import Countdown from './components/CountdownTimer';
 import RotatingPicture from './components/RotatingPicture';
+import Clock from './components/Clock';
 
 function App() {
 
   return (
     <div className="App">
-        <CountdownTimer />
+      <Clock/>
+        <Countdown />
         <RotatingPicture/>
     </div>
   );
