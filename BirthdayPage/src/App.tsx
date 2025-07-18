@@ -1,33 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import Countdown from './components/Countdown'
 import './App.css'
+import WelcomeText from './components/WelcomeText';
+import { getNextValidBirthday } from './utils/utils';
+import { useBirthdayChecker } from './utils/useBirthdayChecker';
+
+const TARGET_DATE = new Date('2023-07-19T23:59:59');
+const TARGET_NAME = 'Runar';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const nextBirthday = getNextValidBirthday(TARGET_DATE);
+  const isBirthday = useBirthdayChecker(nextBirthday);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <WelcomeText userName={TARGET_NAME} isBirthday={isBirthday} />
+      {!isBirthday && <Countdown targetDate={nextBirthday} />}
     </>
   )
 }

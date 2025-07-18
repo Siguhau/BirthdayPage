@@ -4,6 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url))
 
 export default tseslint.config([
   globalIgnores(['dist']),
@@ -16,10 +20,6 @@ export default tseslint.config([
       reactRefresh.configs.vite,
     ],
     languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
       ecmaVersion: 2020,
       globals: globals.browser,
     },
