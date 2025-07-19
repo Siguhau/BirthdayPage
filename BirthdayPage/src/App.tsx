@@ -4,7 +4,7 @@ import WelcomeText from './components/WelcomeText';
 import { getNextValidBirthday } from './utils/utils';
 import { useBirthdayChecker } from './utils/useBirthdayChecker';
 
-const TARGET_DATE = new Date('2023-07-19T23:59:59');
+const TARGET_DATE = new Date('2023-12-17T12:00:00'); 
 const TARGET_NAME = 'Runar';
 
 function App() {
