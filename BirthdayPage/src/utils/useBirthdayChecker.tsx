@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
+import { isBirthdayDate } from "./utils";
 
 export function useBirthdayChecker(nextBirthday: Date): boolean {
   const [isBirthday, setIsBirthday] = useState<boolean>(() => {
-    const now = new Date();
-    return (
-      now.getMonth() === nextBirthday.getMonth() &&
-      now.getDate() === nextBirthday.getDate()
-    );
+    return isBirthdayDate(new Date(), nextBirthday);
   });
 
   useEffect(() => {
     const updateBirthday = () => {
-      const now = new Date();
-      setIsBirthday(
-        now.getMonth() === nextBirthday.getMonth() &&
-          now.getDate() === nextBirthday.getDate(),
-      );
+      setIsBirthday(isBirthdayDate(new Date(), nextBirthday));
     };
 
     // Calculate milliseconds until next midnight

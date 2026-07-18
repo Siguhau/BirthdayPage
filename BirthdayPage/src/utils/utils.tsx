@@ -1,5 +1,11 @@
-export const getNextValidBirthday = (birthday: Date): Date => {
-  const now = new Date();
+export const isBirthdayDate = (date: Date, birthday: Date): boolean =>
+  date.getMonth() === birthday.getMonth() &&
+  date.getDate() === birthday.getDate();
+
+export const getNextValidBirthday = (
+  birthday: Date,
+  now = new Date(),
+): Date => {
   const nextBirthday = new Date(
     now.getFullYear(),
     birthday.getMonth(),
