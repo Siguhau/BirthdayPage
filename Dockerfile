@@ -2,11 +2,11 @@ FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 
 WORKDIR /app
 
-COPY BirthdayPage/package.json BirthdayPage/package-lock.json ./
-RUN npm ci
+COPY BirthdayPage/package.json BirthdayPage/pnpm-lock.yaml BirthdayPage/pnpm-workspace.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY BirthdayPage/ ./
-RUN npm run build
+RUN pnpm build
 
 FROM nginx:1.27-alpine
 
