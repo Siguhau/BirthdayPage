@@ -1,11 +1,13 @@
-
-
 export const getNextValidBirthday = (birthday: Date): Date => {
-    const now = new Date();
-    const nextBirthday = new Date(now.getFullYear(), birthday.getMonth(), birthday.getDate());
+  const now = new Date();
+  const nextBirthday = new Date(
+    now.getFullYear(),
+    birthday.getMonth(),
+    birthday.getDate(),
+  );
 
-    while (nextBirthday < now) {
-        nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
-    }
-    return nextBirthday;
-}
+  while (nextBirthday < now) {
+    nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+  }
+  return nextBirthday;
+};
