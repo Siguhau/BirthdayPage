@@ -20,12 +20,16 @@ describe("App", () => {
   it("shows the countdown view before the birthday", () => {
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
 
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(
       screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("countdown")).toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute("lang", "nb-NO");
+    expect(screen.getByTestId("countdown")).toHaveAttribute(
+      "data-target",
+      new Date("2026-12-16T23:00:00Z").toString(),
+    );
   });
 
   it("shows the greeting without a countdown on the birthday", () => {

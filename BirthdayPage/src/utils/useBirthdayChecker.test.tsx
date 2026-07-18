@@ -2,6 +2,8 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useBirthdayChecker } from "./useBirthdayChecker";
 
+const birthday = { month: 12, day: 17 } as const;
+
 describe("useBirthdayChecker", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -11,10 +13,11 @@ describe("useBirthdayChecker", () => {
     vi.useRealTimers();
   });
 
-  it("updates when the birthday begins at midnight", () => {
-    vi.setSystemTime(new Date("2026-12-16T23:59:59Z"));
-    const birthday = new Date("2026-12-17T00:00:00Z");
-    const { result } = renderHook(() => useBirthdayChecker(birthday));
+  it("updates when the birthday begins in the configured time zone", () => {
+    vi.setSystemTime(new Date("2026-12-16T22:59:59Z"));
+    const { result } = renderHook(() =>
+      useBirthdayChecker(birthday, "Europe/Oslo"),
+    );
 
     expect(result.current).toBe(false);
 
@@ -27,8 +30,9 @@ describe("useBirthdayChecker", () => {
 
   it("clears its scheduled work when unmounted", () => {
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
-    const birthday = new Date("2026-12-17T00:00:00Z");
-    const { unmount } = renderHook(() => useBirthdayChecker(birthday));
+    const { unmount } = renderHook(() =>
+      useBirthdayChecker(birthday, "Europe/Oslo"),
+    );
 
     expect(vi.getTimerCount()).toBe(1);
 
