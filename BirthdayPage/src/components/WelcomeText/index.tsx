@@ -10,10 +10,9 @@ const WelcomeText: React.FC<WelcomeTextProps> = ({ userName, isBirthday }) => {
     const [confetti, setConfetti] = useState<number[]>([]);
 
     useEffect(() => {
-        if (isBirthday) {
-            // Prevent scrolling on the body when it's birthday
-            document.body.style.overflow = 'hidden';
+        document.body.style.overflow = isBirthday ? 'hidden' : 'auto';
 
+        if (isBirthday) {
             // Responsive confetti count based on screen width
             const getConfettiCount = () => {
                 const width = window.innerWidth;
@@ -25,7 +24,9 @@ const WelcomeText: React.FC<WelcomeTextProps> = ({ userName, isBirthday }) => {
 
             // Generate initial confetti particles
             const confettiArray = Array.from({ length: getConfettiCount() }, (_, i) => i + Math.random() * 100000);
-            setConfetti(confettiArray);
+            const initialConfettiTimeout = window.setTimeout(() => {
+                setConfetti(confettiArray);
+            }, 0);
 
             // Create waves every 1.5 seconds for balanced confetti
             const confettiInterval = setInterval(() => {
@@ -52,6 +53,7 @@ const WelcomeText: React.FC<WelcomeTextProps> = ({ userName, isBirthday }) => {
 
             // Cleanup intervals and event listener when component unmounts or isBirthday changes
             return () => {
+                clearTimeout(initialConfettiTimeout);
                 clearInterval(confettiInterval);
                 clearInterval(cleanupInterval);
                 window.removeEventListener('resize', handleResize);
@@ -60,8 +62,14 @@ const WelcomeText: React.FC<WelcomeTextProps> = ({ userName, isBirthday }) => {
             };
         } else {
             // Reset when not birthday and restore scrolling
-            setConfetti([]);
-            document.body.style.overflow = 'auto';
+            const resetConfettiTimeout = window.setTimeout(() => {
+                setConfetti([]);
+            }, 0);
+
+            return () => {
+                clearTimeout(resetConfettiTimeout);
+                document.body.style.overflow = 'auto';
+            };
         }
     }, [isBirthday]);
 
@@ -87,10 +95,10 @@ const WelcomeText: React.FC<WelcomeTextProps> = ({ userName, isBirthday }) => {
                         height: '10px',
                         backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43', '#1dd1a1', '#feca57', '#ff6348', '#c44569', '#786fa6'][Math.floor((particle * 17 + particle * 23) % 15)],
                         borderRadius: '50%',
-                        left: `${(particle * 7 + particle * 13) % 100}%`,
+                        left: `${String((particle * 7 + particle * 13) % 100)}%`,
                         top: '-10px',
-                        animation: `fall ${8 + (particle % 4)}s ease-out forwards`,
-                        animationDelay: `${(particle % 10) * 0.1}s`,
+                        animation: `fall ${String(8 + (particle % 4))}s ease-out forwards`,
+                        animationDelay: `${String((particle % 10) * 0.1)}s`,
                     }}
                 />
             ))}

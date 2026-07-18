@@ -27,7 +27,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: BirthdayPage/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - name: Lint
+        run: pnpm lint
       - run: pnpm build
 
   publish:

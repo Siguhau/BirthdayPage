@@ -10,17 +10,20 @@ import { fileURLToPath } from 'url'
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url))
 
 export default tseslint.config([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-      reactHooks.configs['recommended-latest'],
+      ...tseslint.configs.strictTypeChecked,
+      reactHooks.configs.flat['recommended-latest'],
       reactRefresh.configs.vite,
     ],
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error',
+    },
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 'latest',
       globals: globals.browser,
       parserOptions: {
         projectService: true,
