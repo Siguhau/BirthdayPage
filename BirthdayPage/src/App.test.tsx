@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
@@ -14,6 +14,7 @@ describe("App", () => {
   });
 
   afterEach(() => {
+    window.history.replaceState({}, "", "/");
     vi.useRealTimers();
   });
 
@@ -48,5 +49,66 @@ describe("App", () => {
     unmount();
 
     expect(document.body).toHaveStyle({ overflow: "auto" });
+  });
+
+  it("previews the transition to the birthday view after five seconds", () => {
+    window.history.replaceState({}, "", "/?preview=birthday");
+    vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
+
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("countdown")).toHaveAttribute(
+      "data-target",
+      String(new Date("2026-12-16T12:00:05Z").getTime()),
+    );
+    const restartCountdownButton = screen.getByRole("button", {
+      name: "Restart 5-second countdown",
+    });
+    expect(restartCountdownButton).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Show birthday greeting" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(4_999);
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+
+    expect(
+      screen.getByRole("heading", {
+        name: "🎉 Gratulerer med dagen Runar! 🎉",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("countdown")).not.toBeInTheDocument();
+
+    fireEvent.click(restartCountdownButton);
+
+    expect(
+      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("countdown")).toHaveAttribute(
+      "data-target",
+      String(new Date("2026-12-16T12:00:10Z").getTime()),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show birthday greeting" }),
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: "🎉 Gratulerer med dagen Runar! 🎉",
+      }),
+    ).toBeInTheDocument();
   });
 });
