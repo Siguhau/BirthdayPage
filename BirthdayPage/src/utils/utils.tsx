@@ -101,6 +101,7 @@ export const getNextValidBirthday = (
   now = new Date(),
 ): Date => {
   const currentDate = getCalendarDate(now, createDateFormatter(timeZone));
+  // Reserve two digits for the day to create sortable MMDD-style values.
   const currentMonthAndDay = currentDate.month * 100 + currentDate.day;
   const birthdayMonthAndDay = birthday.month * 100 + birthday.day;
   const year =
