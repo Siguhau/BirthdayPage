@@ -1,41 +1,38 @@
 import { useState, useEffect } from "react";
-import { isBirthdayDate } from "./utils";
+import type { BirthdayDate } from "../birthdayConfig";
+import { getNextZonedMidnight, isBirthdayDate } from "./utils";
 
-export function useBirthdayChecker(nextBirthday: Date): boolean {
+export function useBirthdayChecker(
+  birthday: BirthdayDate,
+  timeZone: string,
+): boolean {
   const [isBirthday, setIsBirthday] = useState<boolean>(() => {
-    return isBirthdayDate(new Date(), nextBirthday);
+    return isBirthdayDate(new Date(), birthday, timeZone);
   });
 
   useEffect(() => {
     const updateBirthday = () => {
-      setIsBirthday(isBirthdayDate(new Date(), nextBirthday));
+      setIsBirthday(isBirthdayDate(new Date(), birthday, timeZone));
     };
 
-    // Calculate milliseconds until next midnight
-    function msUntilMidnight(): number {
+    let timeout: ReturnType<typeof setTimeout>;
+    const scheduleNextUpdate = () => {
       const now = new Date();
-      const midnight = new Date(now);
-      midnight.setHours(24, 0, 0, 0); // next midnight
-      return midnight.getTime() - now.getTime();
-    }
+      const delay =
+        getNextZonedMidnight(timeZone, now).getTime() - now.getTime();
 
-    // Set a timeout to update isBirthday at midnight
-    let interval: ReturnType<typeof setInterval> | undefined;
+      timeout = setTimeout(() => {
+        updateBirthday();
+        scheduleNextUpdate();
+      }, delay);
+    };
 
-    const timeout = setTimeout(() => {
-      updateBirthday();
-      // After updating at midnight, set an interval every 24h for next midnights
-      interval = setInterval(updateBirthday, 24 * 60 * 60 * 1000);
-    }, msUntilMidnight());
+    scheduleNextUpdate();
 
-    // Cleanup timeout on unmount or nextBirthday change
     return () => {
       clearTimeout(timeout);
-      if (interval !== undefined) {
-        clearInterval(interval);
-      }
     };
-  }, [nextBirthday]);
+  }, [birthday, timeZone]);
 
   return isBirthday;
 }

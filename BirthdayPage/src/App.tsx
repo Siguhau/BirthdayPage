@@ -1,18 +1,23 @@
 import Countdown from "./components/Countdown";
 import "./App.css";
 import WelcomeText from "./components/WelcomeText";
+import { birthdayConfig } from "./birthdayConfig";
 import { getNextValidBirthday } from "./utils/utils";
 import { useBirthdayChecker } from "./utils/useBirthdayChecker";
 
-const TARGET_DATE = new Date("2023-12-17T12:00:00");
-const TARGET_NAME = "Runar";
-
 function App() {
-  const nextBirthday = getNextValidBirthday(TARGET_DATE);
-  const isBirthday = useBirthdayChecker(nextBirthday);
+  const nextBirthday = getNextValidBirthday(
+    birthdayConfig.birthday,
+    birthdayConfig.timeZone,
+  );
+  const isBirthday = useBirthdayChecker(
+    birthdayConfig.birthday,
+    birthdayConfig.timeZone,
+  );
 
   return (
     <div
+      lang={birthdayConfig.locale}
       style={{
         minHeight: "100vh",
         width: "100vw",
@@ -25,7 +30,10 @@ function App() {
         justifyContent: "center",
       }}
     >
-      <WelcomeText userName={TARGET_NAME} isBirthday={isBirthday} />
+      <WelcomeText
+        userName={birthdayConfig.displayName}
+        isBirthday={isBirthday}
+      />
       {!isBirthday && <Countdown targetDate={nextBirthday} />}
     </div>
   );
