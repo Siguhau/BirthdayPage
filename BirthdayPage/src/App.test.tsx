@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import ThemeProvider from "./theme/ThemeProvider";
 
 vi.mock("@leenguyen/react-flip-clock-countdown", () => ({
   default: ({ to }: { to: Date | number | string }) => (
@@ -9,6 +10,13 @@ vi.mock("@leenguyen/react-flip-clock-countdown", () => ({
 }));
 
 describe("App", () => {
+  const renderApp = () =>
+    render(
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>,
+    );
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -21,7 +29,7 @@ describe("App", () => {
   it("shows the countdown view before the birthday", () => {
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
 
-    const { container } = render(<App />);
+    const { container } = renderApp();
 
     expect(
       screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
@@ -36,7 +44,7 @@ describe("App", () => {
   it("shows the greeting without a countdown on the birthday", () => {
     vi.setSystemTime(new Date("2026-12-17T12:00:00Z"));
 
-    const { unmount } = render(<App />);
+    const { unmount } = renderApp();
 
     expect(
       screen.getByRole("heading", {
@@ -55,7 +63,7 @@ describe("App", () => {
     window.history.replaceState({}, "", "/?preview=birthday");
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
 
-    render(<App />);
+    renderApp();
 
     expect(
       screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
@@ -70,6 +78,26 @@ describe("App", () => {
     expect(restartCountdownButton).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Show birthday greeting" }),
+    ).toBeInTheDocument();
+    const birthdayThemeButton = screen.getByRole("button", {
+      name: "Birthday theme",
+    });
+    const escapeRoomThemeButton = screen.getByRole("button", {
+      name: "Escape room theme",
+    });
+    expect(birthdayThemeButton).toHaveAttribute("aria-pressed", "true");
+    expect(escapeRoomThemeButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(escapeRoomThemeButton);
+
+    expect(document.documentElement).toHaveAttribute(
+      "data-theme",
+      "escape-room",
+    );
+    expect(escapeRoomThemeButton).toHaveAttribute("aria-pressed", "true");
+    expect(birthdayThemeButton).toHaveAttribute("aria-pressed", "false");
+    expect(
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
 
     act(() => {

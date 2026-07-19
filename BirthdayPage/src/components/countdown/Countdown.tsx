@@ -30,8 +30,8 @@ const Countdown = ({ targetDate }: CountdownProps) => {
     ? { width: 24, height: 36, fontSize: 18 }
     : { width: 56, height: 84, fontSize: 44 };
   const labelStyle = isMobile
-    ? { fontSize: 9, color: "#888" }
-    : { fontSize: 16, color: "#888" };
+    ? { fontSize: 9, color: "var(--theme-text-muted)" }
+    : { fontSize: 16, color: "var(--theme-text-muted)" };
 
   return (
     <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
@@ -39,7 +39,7 @@ const Countdown = ({ targetDate }: CountdownProps) => {
         to={targetDate}
         labels={["DAGER", "TIMER", "MINUTTER", "SEKUNDER"]}
         digitBlockStyle={digitBlockStyle}
-        dividerStyle={{ color: "#222" }}
+        dividerStyle={{ color: "var(--theme-countdown-divider)" }}
         labelStyle={labelStyle}
       />
     </div>

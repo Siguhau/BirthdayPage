@@ -1,0 +1,11 @@
+.page-layout {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: var(--theme-page-background);
+  background-attachment: fixed;
+  color: var(--theme-text-primary);
+}
