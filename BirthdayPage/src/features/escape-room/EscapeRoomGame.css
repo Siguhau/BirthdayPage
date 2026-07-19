@@ -1,0 +1,129 @@
+.escape-room-game {
+  display: flex;
+  width: min(42rem, calc(100% - 2rem));
+  min-height: 28rem;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 6vw, 4rem);
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 1.5rem;
+  animation: escape-room-screen-reveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  background: color-mix(in srgb, var(--theme-control-surface) 82%, transparent);
+  box-shadow:
+    var(--theme-surface-shadow),
+    inset 0 0 4rem rgba(212, 175, 55, 0.04);
+  backdrop-filter: blur(5px);
+  text-align: center;
+}
+
+.escape-room-introduction,
+.escape-room-puzzle,
+.escape-room-complete {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  flex-direction: column;
+}
+
+.escape-room-game__icon {
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 1rem rgba(212, 175, 55, 0.45));
+  font-size: clamp(3rem, 10vw, 5rem);
+}
+
+.escape-room-game__eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--theme-accent);
+  font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.escape-room-game__title {
+  margin: 0;
+  color: var(--theme-text-primary);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 7vw, 3.75rem);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.escape-room-game__description {
+  max-width: 34rem;
+  margin: 1.5rem auto 0;
+  color: var(--theme-text-muted);
+  font-size: clamp(1rem, 3vw, 1.15rem);
+  line-height: 1.7;
+}
+
+.escape-room-game__action {
+  margin-top: 2rem;
+  padding: 0.8rem 1.25rem;
+  border: 1px solid var(--theme-accent);
+  border-radius: 999px;
+  background: var(--theme-control-selected);
+  color: var(--theme-text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.escape-room-game__action--secondary {
+  margin-top: 1.5rem;
+  border-color: var(--theme-border-subtle);
+  background: transparent;
+  color: var(--theme-text-muted);
+  font-size: 0.875rem;
+}
+
+.escape-room-game__action:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 3px;
+}
+
+.escape-room-puzzle__content {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.escape-room-puzzle__placeholder {
+  display: grid;
+  width: 6rem;
+  height: 6rem;
+  margin-top: 2rem;
+  place-items: center;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 1rem;
+  color: var(--theme-accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3rem;
+  box-shadow: inset 0 0 2rem rgba(212, 175, 55, 0.08);
+}
+
+@keyframes escape-room-screen-reveal {
+  from {
+    transform: translateY(1.5rem) scale(0.97);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .escape-room-game {
+    width: min(100% - 1rem, 30rem);
+    min-height: 25rem;
+    padding: 1.75rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escape-room-game {
+    animation: none;
+  }
+}

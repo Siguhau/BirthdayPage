@@ -1,21 +1,24 @@
 import { useTheme } from "../../theme/useTheme";
 import type { FireworksRenderer } from "../birthday/fireworksTypes";
+import type { BirthdayExperiencePage } from "../../pages/birthdayExperiencePage";
 import "./BirthdayPreviewControls.css";
 
 type BirthdayPreviewControlsProps = {
   fireworksRenderer: FireworksRenderer;
-  isBirthday: boolean;
+  page: BirthdayExperiencePage;
   onFireworksRendererChange: (renderer: FireworksRenderer) => void;
   onRestartCountdown: () => void;
   onShowBirthday: () => void;
+  onShowEscapeRoom: () => void;
 };
 
 const BirthdayPreviewControls = ({
   fireworksRenderer,
-  isBirthday,
+  page,
   onFireworksRendererChange,
   onRestartCountdown,
   onShowBirthday,
+  onShowEscapeRoom,
 }: BirthdayPreviewControlsProps) => {
   const { setTheme, theme } = useTheme();
 
@@ -26,7 +29,7 @@ const BirthdayPreviewControls = ({
       role="group"
     >
       <button
-        aria-pressed={!isBirthday}
+        aria-pressed={page === "countdown"}
         className="birthday-preview-controls__button"
         onClick={onRestartCountdown}
         type="button"
@@ -34,12 +37,20 @@ const BirthdayPreviewControls = ({
         Restart 5-second countdown
       </button>
       <button
-        aria-pressed={isBirthday}
+        aria-pressed={page === "escape-room"}
+        className="birthday-preview-controls__button"
+        onClick={onShowEscapeRoom}
+        type="button"
+      >
+        Show escape room entry
+      </button>
+      <button
+        aria-pressed={page === "birthday"}
         className="birthday-preview-controls__button"
         onClick={onShowBirthday}
         type="button"
       >
-        Show birthday greeting
+        Show birthday finale
       </button>
       <span aria-hidden="true" className="birthday-preview-controls__divider" />
       <button

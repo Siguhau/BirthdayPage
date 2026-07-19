@@ -41,25 +41,24 @@ describe("App", () => {
     );
   });
 
-  it("shows the greeting without a countdown on the birthday", () => {
+  it("shows the escape-room entry without a countdown on the birthday", () => {
     vi.setSystemTime(new Date("2026-12-17T12:00:00Z"));
 
-    const { unmount } = renderApp();
+    renderApp();
 
     expect(
       screen.getByRole("heading", {
-        name: "Gratulerer med dagen Runar!",
+        name: "Velkommen til rømningsrommet, Runar",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("countdown")).not.toBeInTheDocument();
-    expect(document.body).toHaveStyle({ overflow: "hidden" });
-
-    unmount();
-
-    expect(document.body).toHaveStyle({ overflow: "auto" });
+    expect(document.documentElement).toHaveAttribute(
+      "data-theme",
+      "escape-room",
+    );
   });
 
-  it("previews the transition to the birthday view after five seconds", () => {
+  it("previews the countdown, escape-room entry, and birthday finale", () => {
     window.history.replaceState({}, "", "/?preview=birthday");
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
 
@@ -76,9 +75,14 @@ describe("App", () => {
       name: "Restart 5-second countdown",
     });
     expect(restartCountdownButton).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Show birthday greeting" }),
-    ).toBeInTheDocument();
+    const showEscapeRoomButton = screen.getByRole("button", {
+      name: "Show escape room entry",
+    });
+    const showBirthdayButton = screen.getByRole("button", {
+      name: "Show birthday finale",
+    });
+    expect(showEscapeRoomButton).toHaveAttribute("aria-pressed", "false");
+    expect(showBirthdayButton).toHaveAttribute("aria-pressed", "false");
     const birthdayThemeButton = screen.getByRole("button", {
       name: "Birthday theme",
     });
@@ -99,18 +103,6 @@ describe("App", () => {
       screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
 
-    fireEvent.click(escapeRoomThemeButton);
-
-    expect(document.documentElement).toHaveAttribute(
-      "data-theme",
-      "escape-room",
-    );
-    expect(escapeRoomThemeButton).toHaveAttribute("aria-pressed", "true");
-    expect(birthdayThemeButton).toHaveAttribute("aria-pressed", "false");
-    expect(
-      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
-    ).toBeInTheDocument();
-
     act(() => {
       vi.advanceTimersByTime(4_999);
     });
@@ -125,10 +117,16 @@ describe("App", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Gratulerer med dagen Runar!",
+        name: "Velkommen til rømningsrommet, Runar",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("countdown")).not.toBeInTheDocument();
+    expect(showEscapeRoomButton).toHaveAttribute("aria-pressed", "true");
+    expect(showBirthdayButton).toHaveAttribute("aria-pressed", "false");
+    expect(document.documentElement).toHaveAttribute(
+      "data-theme",
+      "escape-room",
+    );
 
     fireEvent.click(restartCountdownButton);
 
@@ -139,15 +137,50 @@ describe("App", () => {
       "data-target",
       String(new Date("2026-12-16T12:00:10Z").getTime()),
     );
+    expect(document.documentElement).toHaveAttribute("data-theme", "birthday");
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Show birthday greeting" }),
+    fireEvent.click(showEscapeRoomButton);
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Velkommen til rømningsrommet, Runar",
+      }),
+    ).toBeInTheDocument();
+    expect(document.documentElement).toHaveAttribute(
+      "data-theme",
+      "escape-room",
     );
+
+    fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Den første låsen" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Test fullføring" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Oppdrag fullført" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1_199);
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Oppdrag fullført" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
 
     expect(
       screen.getByRole("heading", {
         name: "Gratulerer med dagen Runar!",
       }),
     ).toBeInTheDocument();
+    expect(showBirthdayButton).toHaveAttribute("aria-pressed", "true");
+    expect(document.documentElement).toHaveAttribute("data-theme", "birthday");
   });
 });

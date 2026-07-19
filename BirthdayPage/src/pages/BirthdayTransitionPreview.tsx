@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import type { FireworksRenderer } from "../components/birthday/fireworksTypes";
 import BirthdayPreviewControls from "../components/preview/BirthdayPreviewControls";
+import { useTheme } from "../theme/useTheme";
 import BirthdayPageView from "./BirthdayPageView";
+import type { BirthdayExperiencePage } from "./birthdayExperiencePage";
 
 const previewDurationMs = 5_000;
 
@@ -9,18 +11,20 @@ const BirthdayTransitionPreview = () => {
   const [targetDate, setTargetDate] = useState(
     () => Date.now() + previewDurationMs,
   );
-  const [isBirthday, setIsBirthday] = useState(false);
+  const [page, setPage] = useState<BirthdayExperiencePage>("countdown");
   const [fireworksRenderer, setFireworksRenderer] =
     useState<FireworksRenderer>("custom");
+  const { setTheme } = useTheme();
 
   useEffect(() => {
-    if (isBirthday) {
+    if (page !== "countdown") {
       return;
     }
 
     const timeout = window.setTimeout(
       () => {
-        setIsBirthday(true);
+        setPage("escape-room");
+        setTheme("escape-room");
       },
       Math.max(0, targetDate - Date.now()),
     );
@@ -28,27 +32,37 @@ const BirthdayTransitionPreview = () => {
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [isBirthday, targetDate]);
+  }, [page, setTheme, targetDate]);
 
   const restartCountdown = () => {
     setTargetDate(Date.now() + previewDurationMs);
-    setIsBirthday(false);
+    setPage("countdown");
+    setTheme("birthday");
   };
 
   return (
     <>
       <BirthdayPageView
         fireworksRenderer={fireworksRenderer}
-        isBirthday={isBirthday}
+        onEscapeRoomComplete={() => {
+          setPage("birthday");
+          setTheme("birthday");
+        }}
+        page={page}
         targetDate={targetDate}
       />
       <BirthdayPreviewControls
         fireworksRenderer={fireworksRenderer}
-        isBirthday={isBirthday}
+        page={page}
         onFireworksRendererChange={setFireworksRenderer}
         onRestartCountdown={restartCountdown}
         onShowBirthday={() => {
-          setIsBirthday(true);
+          setPage("birthday");
+          setTheme("birthday");
+        }}
+        onShowEscapeRoom={() => {
+          setPage("escape-room");
+          setTheme("escape-room");
         }}
       />
     </>
