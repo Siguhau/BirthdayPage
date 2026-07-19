@@ -1,14 +1,31 @@
-import React from "react";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
+import { useEffect, useState } from "react";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 
 type CountdownProps = {
   targetDate: Date | number | string;
 };
 
-const Countdown = ({ targetDate }: CountdownProps): React.JSX.Element => {
-  // Responsive styles for countdown
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 600;
+const mobileBreakpoint = 600;
+
+const isMobileViewport = () =>
+  typeof window !== "undefined" && window.innerWidth <= mobileBreakpoint;
+
+const Countdown = ({ targetDate }: CountdownProps) => {
+  const [isMobile, setIsMobile] = useState(isMobileViewport);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setIsMobile(isMobileViewport());
+    };
+
+    window.addEventListener("resize", updateViewport);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+    };
+  }, []);
+
   const digitBlockStyle = isMobile
     ? { width: 24, height: 36, fontSize: 18 }
     : { width: 56, height: 84, fontSize: 44 };

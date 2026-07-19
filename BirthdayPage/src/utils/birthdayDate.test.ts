@@ -3,7 +3,7 @@ import {
   getNextValidBirthday,
   getNextZonedMidnight,
   isBirthdayDate,
-} from "./utils";
+} from "./birthdayDate";
 
 const birthday = { month: 12, day: 17 } as const;
 

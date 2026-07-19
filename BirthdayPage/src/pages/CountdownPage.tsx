@@ -1,6 +1,6 @@
-import Countdown from "../Countdown";
-import PageLayout from "../PageLayout";
-import WelcomeText from "../WelcomeText";
+import Countdown from "../components/countdown/Countdown";
+import CountdownWelcomeText from "../components/countdown/CountdownWelcomeText";
+import PageLayout from "../components/layout/PageLayout";
 
 type CountdownPageProps = {
   locale: string;
@@ -14,7 +14,7 @@ const CountdownPage = ({
   userName,
 }: CountdownPageProps) => (
   <PageLayout locale={locale}>
-    <WelcomeText userName={userName} isBirthday={false} />
+    <CountdownWelcomeText userName={userName} />
     <Countdown targetDate={targetDate} />
   </PageLayout>
 );

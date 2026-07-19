@@ -40,4 +40,22 @@ describe("useBirthdayChecker", () => {
 
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("updates immediately when the birthday configuration changes", () => {
+    vi.setSystemTime(new Date("2026-12-17T12:00:00Z"));
+    const { rerender, result } = renderHook(
+      ({ configuredBirthday }) => useBirthdayChecker(configuredBirthday, "UTC"),
+      {
+        initialProps: {
+          configuredBirthday: { month: 12, day: 18 },
+        },
+      },
+    );
+
+    expect(result.current).toBe(false);
+
+    rerender({ configuredBirthday: { month: 12, day: 17 } });
+
+    expect(result.current).toBe(true);
+  });
 });

@@ -1,5 +1,5 @@
-import PageLayout from "../PageLayout";
-import WelcomeText from "../WelcomeText";
+import BirthdayWelcomeText from "../components/birthday/BirthdayWelcomeText";
+import PageLayout from "../components/layout/PageLayout";
 
 type BirthdayPageProps = {
   locale: string;
@@ -8,7 +8,7 @@ type BirthdayPageProps = {
 
 const BirthdayPage = ({ locale, userName }: BirthdayPageProps) => (
   <PageLayout locale={locale}>
-    <WelcomeText userName={userName} isBirthday />
+    <BirthdayWelcomeText userName={userName} />
   </PageLayout>
 );
 
