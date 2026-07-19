@@ -1,3 +1,4 @@
 allowBuilds:
   "@swc/core@1.13.0": true
+  "@tsparticles/engine": false
   esbuild@0.28.1: true

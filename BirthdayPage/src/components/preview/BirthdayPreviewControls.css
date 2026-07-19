@@ -34,6 +34,30 @@
   outline-offset: 2px;
 }
 
+.birthday-preview-controls__field {
+  display: flex;
+  align-items: center;
+  color: var(--theme-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.5rem;
+}
+
+.birthday-preview-controls__select {
+  padding: 0.55rem 2rem 0.55rem 0.75rem;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 999px;
+  background: var(--theme-control-surface);
+  color: var(--theme-text-primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.birthday-preview-controls__select:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
 .birthday-preview-controls__divider {
   width: 1px;
   background: var(--theme-border-subtle);

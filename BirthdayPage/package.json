@@ -21,6 +21,10 @@
   },
   "dependencies": {
     "@leenguyen/react-flip-clock-countdown": "^1.7.1",
+    "@tsparticles/engine": "^4.3.2",
+    "@tsparticles/plugin-interactivity": "^4.3.2",
+    "@tsparticles/preset-fireworks": "^4.3.2",
+    "fireworks-js": "^2.10.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

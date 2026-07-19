@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FireworksRenderer } from "../components/birthday/fireworksTypes";
 import BirthdayPreviewControls from "../components/preview/BirthdayPreviewControls";
 import BirthdayPageView from "./BirthdayPageView";
 
@@ -9,6 +10,8 @@ const BirthdayTransitionPreview = () => {
     () => Date.now() + previewDurationMs,
   );
   const [isBirthday, setIsBirthday] = useState(false);
+  const [fireworksRenderer, setFireworksRenderer] =
+    useState<FireworksRenderer>("custom");
 
   useEffect(() => {
     if (isBirthday) {
@@ -34,9 +37,15 @@ const BirthdayTransitionPreview = () => {
 
   return (
     <>
-      <BirthdayPageView isBirthday={isBirthday} targetDate={targetDate} />
-      <BirthdayPreviewControls
+      <BirthdayPageView
+        fireworksRenderer={fireworksRenderer}
         isBirthday={isBirthday}
+        targetDate={targetDate}
+      />
+      <BirthdayPreviewControls
+        fireworksRenderer={fireworksRenderer}
+        isBirthday={isBirthday}
+        onFireworksRendererChange={setFireworksRenderer}
         onRestartCountdown={restartCountdown}
         onShowBirthday={() => {
           setIsBirthday(true);

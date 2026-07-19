@@ -87,6 +87,17 @@ describe("App", () => {
     });
     expect(birthdayThemeButton).toHaveAttribute("aria-pressed", "true");
     expect(escapeRoomThemeButton).toHaveAttribute("aria-pressed", "false");
+    const fireworksRenderer = screen.getByRole("combobox", {
+      name: "Fireworks renderer",
+    });
+    expect(fireworksRenderer).toHaveValue("custom");
+
+    fireEvent.change(fireworksRenderer, { target: { value: "combined" } });
+
+    expect(fireworksRenderer).toHaveValue("combined");
+    expect(
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
+    ).toBeInTheDocument();
 
     fireEvent.click(escapeRoomThemeButton);
 
