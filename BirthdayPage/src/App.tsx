@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import Countdown from "./components/Countdown";
 import "./App.css";
+import BirthdayPage from "./components/BirthdayPage";
 import BirthdayPreviewControls from "./components/BirthdayPreviewControls";
-import WelcomeText from "./components/WelcomeText";
+import CountdownPage from "./components/CountdownPage";
 import { birthdayConfig } from "./birthdayConfig";
 import { getNextValidBirthday } from "./utils/utils";
 import { useBirthdayChecker } from "./utils/useBirthdayChecker";
@@ -14,31 +14,19 @@ type BirthdayPageViewProps = {
   targetDate: Date | number | string;
 };
 
-const BirthdayPageView = ({
-  isBirthday,
-  targetDate,
-}: BirthdayPageViewProps) => (
-  <div
-    lang={birthdayConfig.locale}
-    style={{
-      minHeight: "100vh",
-      width: "100vw",
-      background:
-        "linear-gradient(135deg, #232526 0%, #414345 40%, #23243a 100%)",
-      backgroundAttachment: "fixed",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    <WelcomeText
+const BirthdayPageView = ({ isBirthday, targetDate }: BirthdayPageViewProps) =>
+  isBirthday ? (
+    <BirthdayPage
+      locale={birthdayConfig.locale}
       userName={birthdayConfig.displayName}
-      isBirthday={isBirthday}
     />
-    {!isBirthday && <Countdown targetDate={targetDate} />}
-  </div>
-);
+  ) : (
+    <CountdownPage
+      locale={birthdayConfig.locale}
+      targetDate={targetDate}
+      userName={birthdayConfig.displayName}
+    />
+  );
 
 const LiveBirthdayPage = () => {
   const nextBirthday = getNextValidBirthday(
