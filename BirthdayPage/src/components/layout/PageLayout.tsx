@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react";
+import StarBackground from "./StarBackground";
 import "./PageLayout.css";
 
 type PageLayoutProps = PropsWithChildren<{
@@ -7,6 +8,7 @@ type PageLayoutProps = PropsWithChildren<{
 
 const PageLayout = ({ children, locale }: PageLayoutProps) => (
   <div className="page-layout" lang={locale}>
+    <StarBackground />
     {children}
   </div>
 );

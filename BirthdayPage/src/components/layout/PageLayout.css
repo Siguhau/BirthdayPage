@@ -1,4 +1,5 @@
 .page-layout {
+  position: relative;
   display: flex;
   width: 100vw;
   min-height: 100vh;
@@ -8,4 +9,90 @@
   background: var(--theme-page-background);
   background-attachment: fixed;
   color: var(--theme-text-primary);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.page-layout > :not(.star-background) {
+  position: relative;
+  z-index: 1;
+}
+
+.star-background {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  inset: 0;
+}
+
+:root[data-theme="escape-room"] .star-background {
+  display: block;
+}
+
+.star-background__star {
+  position: absolute;
+  top: var(--star-y);
+  left: var(--star-x);
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  animation: star-twinkle var(--star-duration) ease-in-out var(--star-delay)
+    infinite;
+  background: #fff8dc;
+  box-shadow:
+    0 0 4px rgba(255, 248, 220, 0.9),
+    0 0 9px rgba(212, 175, 55, 0.45);
+  opacity: var(--star-opacity);
+}
+
+.star-background__star--bright::before,
+.star-background__star--bright::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 248, 220, 0.8),
+    transparent
+  );
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.star-background__star--bright::before {
+  width: 13px;
+  height: 1px;
+}
+
+.star-background__star--bright::after {
+  width: 1px;
+  height: 13px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 248, 220, 0.8),
+    transparent
+  );
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    transform: scale(0.75);
+    opacity: calc(var(--star-opacity) * 0.55);
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: var(--star-opacity);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-background__star {
+    animation: none;
+  }
 }
