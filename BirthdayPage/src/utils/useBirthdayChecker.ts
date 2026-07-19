@@ -1,18 +1,24 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { BirthdayDate } from "../birthdayConfig";
-import { getNextZonedMidnight, isBirthdayDate } from "./utils";
+import { getNextZonedMidnight, isBirthdayDate } from "./birthdayDate";
 
 export function useBirthdayChecker(
   birthday: BirthdayDate,
   timeZone: string,
 ): boolean {
+  const birthdayDay = birthday.day;
+  const birthdayMonth = birthday.month;
   const [isBirthday, setIsBirthday] = useState<boolean>(() => {
     return isBirthdayDate(new Date(), birthday, timeZone);
   });
 
   useEffect(() => {
+    const configuredBirthday = {
+      day: birthdayDay,
+      month: birthdayMonth,
+    };
     const updateBirthday = () => {
-      setIsBirthday(isBirthdayDate(new Date(), birthday, timeZone));
+      setIsBirthday(isBirthdayDate(new Date(), configuredBirthday, timeZone));
     };
 
     let timeout: ReturnType<typeof setTimeout>;
@@ -27,12 +33,13 @@ export function useBirthdayChecker(
       }, delay);
     };
 
+    updateBirthday();
     scheduleNextUpdate();
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [birthday, timeZone]);
+  }, [birthdayDay, birthdayMonth, timeZone]);
 
   return isBirthday;
 }

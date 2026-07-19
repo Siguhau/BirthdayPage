@@ -24,7 +24,7 @@ describe("App", () => {
     const { container } = render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
     expect(container.firstElementChild).toHaveAttribute("lang", "nb-NO");
     expect(screen.getByTestId("countdown")).toHaveAttribute(
@@ -40,7 +40,7 @@ describe("App", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "🎉 Gratulerer med dagen Runar! 🎉",
+        name: "Gratulerer med dagen Runar!",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("countdown")).not.toBeInTheDocument();
@@ -58,7 +58,7 @@ describe("App", () => {
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
     expect(screen.getByTestId("countdown")).toHaveAttribute(
       "data-target",
@@ -77,7 +77,7 @@ describe("App", () => {
     });
 
     expect(
-      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
 
     act(() => {
@@ -86,7 +86,7 @@ describe("App", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "🎉 Gratulerer med dagen Runar! 🎉",
+        name: "Gratulerer med dagen Runar!",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("countdown")).not.toBeInTheDocument();
@@ -94,7 +94,7 @@ describe("App", () => {
     fireEvent.click(restartCountdownButton);
 
     expect(
-      screen.getByRole("heading", { name: "Tid til Runar's bursdag" }),
+      screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();
     expect(screen.getByTestId("countdown")).toHaveAttribute(
       "data-target",
@@ -107,7 +107,7 @@ describe("App", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "🎉 Gratulerer med dagen Runar! 🎉",
+        name: "Gratulerer med dagen Runar!",
       }),
     ).toBeInTheDocument();
   });
