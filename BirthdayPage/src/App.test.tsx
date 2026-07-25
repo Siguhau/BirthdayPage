@@ -154,7 +154,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
 
     expect(
-      screen.getByRole("heading", { name: "Den første låsen" }),
+      screen.getByRole("heading", { name: "Er det en vase?" }),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Test fullføring" }));

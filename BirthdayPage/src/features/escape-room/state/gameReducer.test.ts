@@ -8,16 +8,16 @@ describe("gameReducer", () => {
 
     expect(startedState).toEqual({
       solvedPuzzles: [],
-      stage: "first-puzzle",
+      stage: "vase-captcha",
     });
 
     expect(
       gameReducer(startedState, {
         type: "SOLVE_PUZZLE",
-        puzzleId: "first-puzzle",
+        puzzleId: "vase-captcha",
       }),
     ).toEqual({
-      solvedPuzzles: ["first-puzzle"],
+      solvedPuzzles: ["vase-captcha"],
       stage: "complete",
     });
   });
@@ -26,7 +26,7 @@ describe("gameReducer", () => {
     expect(
       gameReducer(initialGameState, {
         type: "SOLVE_PUZZLE",
-        puzzleId: "first-puzzle",
+        puzzleId: "vase-captcha",
       }),
     ).toBe(initialGameState);
   });
@@ -34,7 +34,7 @@ describe("gameReducer", () => {
   it("resets all progress", () => {
     expect(
       gameReducer(
-        { solvedPuzzles: ["first-puzzle"], stage: "complete" },
+        { solvedPuzzles: ["vase-captcha"], stage: "complete" },
         { type: "RESET_GAME" },
       ),
     ).toBe(initialGameState);

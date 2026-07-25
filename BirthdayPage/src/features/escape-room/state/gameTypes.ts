@@ -1,4 +1,4 @@
-export const puzzleIds = ["first-puzzle"] as const;
+export const puzzleIds = ["vase-captcha"] as const;
 
 export type PuzzleId = (typeof puzzleIds)[number];
 

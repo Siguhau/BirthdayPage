@@ -10,6 +10,7 @@ when the final puzzle has been solved.
 ```text
 escape-room/
   components/       Shared game and puzzle layouts
+  puzzles/          Puzzle configuration and content data
   screens/          Introduction, puzzles, and completion screens
   state/            Stage types, puzzle order, reducer, and reducer tests
   EscapeRoomGame.tsx
@@ -25,17 +26,17 @@ can be added later without changing individual puzzle screens.
 
 ## Add a puzzle
 
-The following example adds a second puzzle after `first-puzzle`.
+The following example adds a second puzzle after `vase-captcha`.
 
 ### 1. Register its ID and position
 
 Add the ID to `puzzleIds` in `state/gameTypes.ts`:
 
 ```ts
-export const puzzleIds = ["first-puzzle", "second-puzzle"] as const;
+export const puzzleIds = ["vase-captcha", "second-puzzle"] as const;
 ```
 
-Order matters. Solving `first-puzzle` will now advance to `second-puzzle`
+Order matters. Solving `vase-captcha` will now advance to `second-puzzle`
 instead of completing the game. `PuzzleId`, `GameStage`, actions, and solved
 progress derive their TypeScript types from this tuple.
 
@@ -126,14 +127,14 @@ stage, which prevents accidental skipping and duplicate completion.
 Extend `state/gameReducer.test.ts` to verify the new order:
 
 ```ts
-const firstPuzzleSolved = gameReducer(startedState, {
+const vaseCaptchaSolved = gameReducer(startedState, {
   type: "SOLVE_PUZZLE",
-  puzzleId: "first-puzzle",
+  puzzleId: "vase-captcha",
 });
 
-expect(firstPuzzleSolved.stage).toBe("second-puzzle");
+expect(vaseCaptchaSolved.stage).toBe("second-puzzle");
 
-const secondPuzzleSolved = gameReducer(firstPuzzleSolved, {
+const secondPuzzleSolved = gameReducer(vaseCaptchaSolved, {
   type: "SOLVE_PUZZLE",
   puzzleId: "second-puzzle",
 });
@@ -144,6 +145,39 @@ expect(secondPuzzleSolved.stage).toBe("complete");
 Add component tests for puzzle validation when a puzzle has answer handling,
 attempt limits, hints, timers, or other behavior. Test what the player sees and
 does, and verify that `onSolve` is called only for a valid solution.
+
+## Configure the vase CAPTCHA
+
+`VaseCaptchaPuzzle` always renders a 4×4 grid. Its tile content and correct
+answers live in `puzzles/vaseCaptchaConfig.ts`, so the real images can be added
+without changing the puzzle component.
+
+1. Add 16 optimized images under
+   `public/images/puzzles/vase-captcha/`.
+2. Set each tile's `imageSrc` to its public path.
+3. Give every image a short, neutral description in `alt`.
+4. Add the IDs of every vase tile to `correctVaseTileIds`.
+
+For example:
+
+```ts
+export const vaseCaptchaTiles = [
+  {
+    id: "tile-01",
+    imageSrc: "/images/puzzles/vase-captcha/01.webp",
+    alt: "En gjenstand på et bord",
+  },
+  // Add all 16 tiles.
+] as const satisfies readonly VaseCaptchaTile[];
+
+export const correctVaseTileIds = ["tile-01", "tile-07"] as const;
+```
+
+Avoid revealing the answer in filenames or alternative text. The confirmation
+button remains disabled until all 16 images and at least one correct tile are
+configured. A solution must contain every vase and no incorrect selections.
+The component accepts configuration through props so this exact-match behavior
+can be tested without exposing production answers in the test fixtures.
 
 ## Game completion
 
@@ -164,9 +198,10 @@ http://127.0.0.1:5173/?preview=birthday
 ```
 
 Use the preview controls to show the escape-room entry, then select
-`Begynn oppdraget`. The current placeholder puzzle includes a development-only
-`Test fullføring` button for verifying the completion-to-finale handoff. Remove
-that button when the first real puzzle implements its own solution.
+`Begynn oppdraget`. The vase CAPTCHA includes a development-only
+`Test fullføring` button for verifying the completion-to-finale handoff while
+its real images are not yet configured. Remove that shortcut once the final
+images and answers are in place.
 
 Before committing a puzzle, run:
 

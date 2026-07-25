@@ -1,8 +1,8 @@
 import { useEffect, useReducer } from "react";
 import GameShell from "./components/GameShell";
-import FirstPuzzle from "./screens/FirstPuzzle";
 import GameComplete from "./screens/GameComplete";
 import GameIntroduction from "./screens/GameIntroduction";
+import VaseCaptchaPuzzle from "./screens/VaseCaptchaPuzzle";
 import { gameReducer } from "./state/gameReducer";
 import { initialGameState } from "./state/gameTypes";
 import "./EscapeRoomGame.css";
@@ -37,10 +37,10 @@ const EscapeRoomGame = ({ onComplete, userName }: EscapeRoomGameProps) => {
           userName={userName}
         />
       )}
-      {gameState.stage === "first-puzzle" && (
-        <FirstPuzzle
+      {gameState.stage === "vase-captcha" && (
+        <VaseCaptchaPuzzle
           onSolve={() => {
-            dispatch({ type: "SOLVE_PUZZLE", puzzleId: "first-puzzle" });
+            dispatch({ type: "SOLVE_PUZZLE", puzzleId: "vase-captcha" });
           }}
         />
       )}
