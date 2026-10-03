@@ -35,8 +35,8 @@ props. Build these configured areas:
 
 1. **Memory Gallery:** an amber hallway with a deep-navy interface, two side
    rooms, and a locked door at the end.
-2. **Oddities Workshop:** a corn-yellow and green side room for playful,
-   inside-joke interactions.
+2. **Oddities Workshop:** a playful purple, lime, yellow, and magenta side room
+   for inside-joke interactions.
 3. **Memory Archive:** a teal and coral side room for image, CAPTCHA, and
    cipher-style puzzles.
 4. **Stairway:** opened only after every required Area 1 puzzle is solved; it
@@ -283,7 +283,8 @@ without inventing personal content.
 
 - Add the three 3D dependencies.
 - Render a full-viewport canvas only inside the escape-room page.
-- Build one flat-walled corridor and one side room from boxes.
+- Build one flat-walled corridor with two side rooms and interactive sliding
+  doors from boxes.
 - Add WASD movement, mouse look, wall collision, an `E` interaction placeholder,
   and a visible prompt.
 - Add an `Escape` menu with Resume, Controls, and confirmed Clear Memory.
@@ -291,10 +292,10 @@ without inventing personal content.
 - Detect unsupported mobile, reduced-motion, and WebGL cases; explain the skip
   and continue to the celebration.
 
-Exit criterion: a supported desktop player can traverse the corridor and side
-room without passing through walls, change configured area theme, use the
-interaction placeholder, and safely pause/resume. Unsupported paths reach the
-existing celebration only after an explanation.
+Exit criterion: a supported desktop player can traverse the corridor and both
+side rooms without passing through walls, open both doors, change configured
+area themes, use the interaction placeholder, and safely pause/resume.
+Unsupported paths reach the existing celebration only after an explanation.
 
 Phase 1 acceptance:
 
@@ -504,7 +505,8 @@ Technical choices:
 Required behavior:
 - The introduction remains DOM UI.
 - Starting the game opens a lazy-loaded full-viewport 3D canvas.
-- Create one flat-walled corridor and one side room.
+- Create one flat-walled corridor with two side rooms and interactive sliding
+  doors.
 - Desktop movement supports WASD, mouse look, `E` interaction, pointer-lock
   release, and a visible reticle/prompt.
 - The player cannot pass through walls.
@@ -512,7 +514,7 @@ Required behavior:
 - `Escape` opens a paused menu with Resume, Controls, and confirmed Clear
   Memory.
 - Change environment colors and interface styling from typed area
-  configuration when the player enters the side room.
+  configuration when the player enters either side room.
 - On mobile, when WebGL is unavailable, or when reduced motion is preferred,
   explain why the game is skipped and then use the existing handoff to continue
   to the celebration.

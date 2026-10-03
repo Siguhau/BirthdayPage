@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import PuzzleLayout from "../components/PuzzleLayout";
 import {
   correctVaseTileIds,
@@ -35,7 +35,7 @@ const VaseCaptchaPuzzle = ({
     );
   };
 
-  const submitSelection = (event: FormEvent<HTMLFormElement>) => {
+  const submitSelection = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isConfigured) return;
 

@@ -1,227 +1,52 @@
-# Escape-room puzzles
+# Escape room
 
-The escape room is a self-contained feature. The application only decides
-whether to show the countdown, the escape room, or the birthday finale.
-`EscapeRoomGame` owns all progression inside the game and calls `onComplete`
-when the final puzzle has been solved.
+The birthday page owns the countdown and celebration. `EscapeRoomGame` owns the
+escape room and calls `onComplete` after the Pepsi chest is opened. The 3D world
+is loaded only after a supported desktop player starts the game.
 
-## Structure
+## Current structure
 
 ```text
 escape-room/
-  components/       Shared game and puzzle layouts
-  puzzles/          Puzzle configuration and content data
-  screens/          Introduction, puzzles, and completion screens
-  state/            Stage types, puzzle order, reducer, and reducer tests
-  EscapeRoomGame.tsx
-  EscapeRoomGame.css
+  puzzles/       Puzzle data and small progression helpers
+  screens/       Introduction, puzzle, unsupported-device, and completion UI
+  overlays/      DOM puzzle dialog
+  state/         Reducer and game state types
+  support/       Mobile, reduced-motion, and WebGL checks
+  world/         3D scene, controls, interactions, and in-world dialogs
+  persistence/   Clear-memory helper only
 ```
 
-The ordered `puzzleIds` tuple in `state/gameTypes.ts` is the source of truth
-for puzzle order. `gameReducer` advances to the next ID in that tuple. When
-there is no next ID, it advances to `"complete"`.
+`state/gameReducer.ts` owns solved puzzles, inventory, installed items, mirror
+orientations, laser power, and completion. `puzzles/puzzleRegistry.ts` maps
+puzzle IDs to DOM overlays. Some interactions and temporary room state still
+live in `world/EscapeRoomWorld.tsx`.
 
-Progress is currently kept in memory and resets after a reload. Persistence
-can be added later without changing individual puzzle screens.
+Progress is currently **not saved**. The clear-memory action removes a storage
+key, but no code writes or restores it. Reloading starts at the introduction.
+The completion view advances automatically to the birthday celebration after
+1.2 seconds; there is not yet a separate final exit interaction.
 
-## Add a puzzle
+## Adding a puzzle
 
-The following example adds a second puzzle after `vase-captcha`.
+Add its ID to `state/gameTypes.ts`, its overlay to `puzzles/puzzleRegistry.ts`
+if it uses one, and its world interaction in `world/worldConfig.ts`. Keep answer
+validation in the puzzle UI or a pure helper. Add tests for the player's
+success and failure paths, and for any reducer transition or world prerequisite.
+Puzzle screens call `onSolve` and do not navigate to the birthday page.
 
-### 1. Register its ID and position
+The vase CAPTCHA still needs 16 real images and the correct tile IDs in
+`puzzles/vaseCaptchaConfig.ts`. Its confirmation button is disabled until then.
+A development-only completion shortcut is present for testing the handoff.
+Remove the shortcut when the production puzzle is configured.
 
-Add the ID to `puzzleIds` in `state/gameTypes.ts`:
+## Preview and verification
 
-```ts
-export const puzzleIds = ["vase-captcha", "second-puzzle"] as const;
-```
+Run `pnpm dev` from the `BirthdayPage/` package directory and open
+`http://127.0.0.1:5173/?preview=birthday`. Select the escape-room entry in the
+preview controls.
 
-Order matters. Solving `vase-captcha` will now advance to `second-puzzle`
-instead of completing the game. `PuzzleId`, `GameStage`, actions, and solved
-progress derive their TypeScript types from this tuple.
-
-Use stable, descriptive kebab-case IDs. Do not rename a puzzle ID after adding
-progress persistence unless you also provide a migration.
-
-### 2. Create its screen
-
-Add `screens/SecondPuzzle.tsx`:
-
-```tsx
-import { useState } from "react";
-import PuzzleLayout from "../components/PuzzleLayout";
-
-type SecondPuzzleProps = {
-  onSolve: () => void;
-};
-
-const SecondPuzzle = ({ onSolve }: SecondPuzzleProps) => {
-  const [answer, setAnswer] = useState("");
-
-  const submitAnswer = () => {
-    const normalizedAnswer = answer.trim().toLocaleLowerCase("nb-NO");
-
-    if (normalizedAnswer === "riktig svar") {
-      onSolve();
-    }
-  };
-
-  return (
-    <PuzzleLayout
-      description="Ledetråden eller oppgaven vises her."
-      puzzleNumber={2}
-      title="Den andre låsen"
-    >
-      <label>
-        Svar
-        <input
-          onChange={(event) => {
-            setAnswer(event.target.value);
-          }}
-          value={answer}
-        />
-      </label>
-      <button onClick={submitAnswer} type="button">
-        Prøv svaret
-      </button>
-    </PuzzleLayout>
-  );
-};
-
-export default SecondPuzzle;
-```
-
-Keep answer input, hints, attempts, and other puzzle-specific state inside the
-puzzle screen. The screen should report only successful completion through
-`onSolve`. It should not import or dispatch to the game reducer directly.
-
-Remember that answers shipped in client-side code can be discovered through
-the browser developer tools. That is normally acceptable for this personal
-game, but client-side validation is not secure against deliberate inspection.
-
-### 3. Map the stage to the screen
-
-Import and render the screen in `EscapeRoomGame.tsx`:
-
-```tsx
-import SecondPuzzle from "./screens/SecondPuzzle";
-
-// Inside GameShell:
-{
-  gameState.stage === "second-puzzle" && (
-    <SecondPuzzle
-      onSolve={() => {
-        dispatch({ type: "SOLVE_PUZZLE", puzzleId: "second-puzzle" });
-      }}
-    />
-  );
-}
-```
-
-The screen's stage check and dispatched `puzzleId` must match its registered
-ID exactly. The reducer rejects solving a puzzle that is not the current
-stage, which prevents accidental skipping and duplicate completion.
-
-### 4. Update progression tests
-
-Extend `state/gameReducer.test.ts` to verify the new order:
-
-```ts
-const vaseCaptchaSolved = gameReducer(startedState, {
-  type: "SOLVE_PUZZLE",
-  puzzleId: "vase-captcha",
-});
-
-expect(vaseCaptchaSolved.stage).toBe("second-puzzle");
-
-const secondPuzzleSolved = gameReducer(vaseCaptchaSolved, {
-  type: "SOLVE_PUZZLE",
-  puzzleId: "second-puzzle",
-});
-
-expect(secondPuzzleSolved.stage).toBe("complete");
-```
-
-Add component tests for puzzle validation when a puzzle has answer handling,
-attempt limits, hints, timers, or other behavior. Test what the player sees and
-does, and verify that `onSolve` is called only for a valid solution.
-
-## Configure the vase CAPTCHA
-
-`VaseCaptchaPuzzle` always renders a 4×4 grid. Its tile content and correct
-answers live in `puzzles/vaseCaptchaConfig.ts`, so the real images can be added
-without changing the puzzle component.
-
-1. Add 16 optimized images under
-   `public/images/puzzles/vase-captcha/`.
-2. Set each tile's `imageSrc` to its public path.
-3. Give every image a short, neutral description in `alt`.
-4. Add the IDs of every vase tile to `correctVaseTileIds`.
-
-For example:
-
-```ts
-export const vaseCaptchaTiles = [
-  {
-    id: "tile-01",
-    imageSrc: "/images/puzzles/vase-captcha/01.webp",
-    alt: "En gjenstand på et bord",
-  },
-  // Add all 16 tiles.
-] as const satisfies readonly VaseCaptchaTile[];
-
-export const correctVaseTileIds = ["tile-01", "tile-07"] as const;
-```
-
-Avoid revealing the answer in filenames or alternative text. The confirmation
-button remains disabled until all 16 images and at least one correct tile are
-configured. A solution must contain every vase and no incorrect selections.
-The component accepts configuration through props so this exact-match behavior
-can be tested without exposing production answers in the test fixtures.
-
-## Game completion
-
-After the last puzzle, the reducer selects the `complete` stage.
-`GameComplete` is shown briefly, then `EscapeRoomGame` calls `onComplete`.
-The page-level experience handles that callback and switches to the birthday
-finale and birthday theme.
-
-Puzzle screens must not import `BirthdayPage`, manipulate the global theme, or
-navigate to the finale themselves.
-
-## Preview the flow
-
-Run the development server and open:
-
-```text
-http://127.0.0.1:5173/?preview=birthday
-```
-
-Use the preview controls to show the escape-room entry, then select
-`Begynn oppdraget`. The vase CAPTCHA includes a development-only
-`Test fullføring` button for verifying the completion-to-finale handoff while
-its real images are not yet configured. Remove that shortcut once the final
-images and answers are in place.
-
-Before committing a puzzle, run:
-
-```sh
-pnpm test
-pnpm typecheck
-pnpm lint
-pnpm format:check
-pnpm build
-```
-
-Also test the puzzle at 320×568, verify keyboard focus order and readable
-contrast, and ensure animations have a reduced-motion fallback.
-
-## Puzzle checklist
-
-- Register a unique ID in the correct `puzzleIds` position.
-- Create a screen using `PuzzleLayout` where appropriate.
-- Keep puzzle-specific state and answer validation inside the screen.
-- Call `onSolve` only after a valid solution.
-- Map the stage and matching solve action in `EscapeRoomGame`.
-- Test progression and the puzzle's user interactions.
-- Verify desktop, mobile, keyboard, and reduced-motion behavior.
+Before committing, run `pnpm test`, `pnpm typecheck`, `pnpm lint`,
+`pnpm format:check`, and `pnpm build`. Real WebGL, pointer lock, collisions,
+mouse movement, and the full puzzle route also require browser playtesting.
+The phase acceptance criteria are in `ESCAPE_ROOM_3D_PLAN.md`.

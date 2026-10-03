@@ -12,7 +12,7 @@ const EscapeRoomPage = ({
   onComplete,
   userName,
 }: EscapeRoomPageProps) => (
-  <PageLayout locale={locale}>
+  <PageLayout locale={locale} variant="immersive">
     <EscapeRoomGame onComplete={onComplete} userName={userName} />
   </PageLayout>
 );

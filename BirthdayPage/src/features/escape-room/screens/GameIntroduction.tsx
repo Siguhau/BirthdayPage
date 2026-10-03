@@ -13,8 +13,12 @@ const GameIntroduction = ({ onStart, userName }: GameIntroductionProps) => (
       Velkommen til rømningsrommet, {userName}
     </h1>
     <p className="escape-room-game__description">
-      En rekke gåter står mellom deg og årets bursdagshilsen. Se nøye etter,
-      tenk kreativt og stol på instinktene dine.
+      En personlig reise gjennom minner, merkelige rom og gamle internvitser
+      står mellom deg og årets bursdagshilsen.
+    </p>
+    <p className="escape-room-introduction__controls">
+      WASD beveger deg · Space hopper · Musen ser rundt · E undersøker · Escape
+      åpner menyen
     </p>
     <button
       className="escape-room-game__action"

@@ -18,6 +18,15 @@
   z-index: 1;
 }
 
+.page-layout--immersive {
+  height: 100dvh;
+}
+
+.page-layout--immersive > :not(.star-background) {
+  position: absolute;
+  inset: 0;
+}
+
 .star-background {
   position: absolute;
   z-index: 0;

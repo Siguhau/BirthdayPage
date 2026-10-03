@@ -9,6 +9,18 @@ vi.mock("@leenguyen/react-flip-clock-countdown", () => ({
   ),
 }));
 
+vi.mock("./features/escape-room/support/useEscapeRoomSupport", () => ({
+  default: () => ({ supported: true }),
+}));
+
+vi.mock("./features/escape-room/world/EscapeRoomWorld", () => ({
+  default: () => (
+    <section>
+      <h1>Memory Gallery</h1>
+    </section>
+  ),
+}));
+
 describe("App", () => {
   const renderApp = () =>
     render(
@@ -58,7 +70,7 @@ describe("App", () => {
     );
   });
 
-  it("previews the countdown, escape-room entry, and birthday finale", () => {
+  it("previews the countdown, escape-room entry, and birthday finale", async () => {
     window.history.replaceState({}, "", "/?preview=birthday");
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
 
@@ -153,27 +165,15 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
 
-    expect(
-      screen.getByRole("heading", { name: "Er det en vase?" }),
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Test fullføring" }));
-
-    expect(
-      screen.getByRole("heading", { name: "Oppdrag fullført" }),
-    ).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(1_199);
+    await act(async () => {
+      await Promise.resolve();
     });
 
     expect(
-      screen.getByRole("heading", { name: "Oppdrag fullført" }),
+      screen.getByRole("heading", { name: "Memory Gallery" }),
     ).toBeInTheDocument();
 
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
+    fireEvent.click(showBirthdayButton);
 
     expect(
       screen.getByRole("heading", {

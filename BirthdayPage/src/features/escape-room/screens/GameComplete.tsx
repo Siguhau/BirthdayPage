@@ -3,8 +3,8 @@ const GameComplete = () => (
     <div aria-hidden="true" className="escape-room-game__icon">
       🔓
     </div>
-    <p className="escape-room-game__eyebrow">Alle låser er åpnet</p>
-    <h1 className="escape-room-game__title">Oppdrag fullført</h1>
+    <p className="escape-room-game__eyebrow">Pepsi Max funnet</p>
+    <h1 className="escape-room-game__title">Kisten er åpnet</h1>
     <p className="escape-room-game__description">
       Bursdagshilsenen låses opp …
     </p>
