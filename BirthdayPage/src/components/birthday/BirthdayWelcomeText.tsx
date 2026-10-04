@@ -1,12 +1,19 @@
 import { useEffect } from "react";
-import BirthdayConfetti from "./BirthdayConfetti";
+import BirthdayFireworks from "./BirthdayFireworks";
+import type { FireworksRenderer } from "./fireworksTypes";
 import "./BirthdayWelcomeText.css";
 
 type BirthdayWelcomeTextProps = {
+  enterFromGame?: boolean;
+  fireworksRenderer?: FireworksRenderer;
   userName: string;
 };
 
-const BirthdayWelcomeText = ({ userName }: BirthdayWelcomeTextProps) => {
+const BirthdayWelcomeText = ({
+  enterFromGame = false,
+  fireworksRenderer,
+  userName,
+}: BirthdayWelcomeTextProps) => {
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -16,8 +23,8 @@ const BirthdayWelcomeText = ({ userName }: BirthdayWelcomeTextProps) => {
   }, []);
 
   return (
-    <div className="birthday-welcome">
-      <BirthdayConfetti />
+    <div className="birthday-welcome" data-arriving={enterFromGame}>
+      <BirthdayFireworks renderer={fireworksRenderer} />
       <h1 className="birthday-welcome__title">
         <span aria-hidden="true" className="birthday-welcome__emoji">
           🎉

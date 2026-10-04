@@ -1,3 +1,10 @@
 allowBuilds:
-  "@swc/core@1.13.0": true
+  "@swc/core@1.16.2": true
+  "@tsparticles/engine": false
   esbuild@0.28.1: true
+
+# Patched releases for vulnerable transitive dependencies in the PWA build tooling.
+overrides:
+  "brace-expansion@>=2.0.0 <2.1.4": "2.1.4"
+  "fast-uri@>=3.0.0 <3.1.6": "3.1.6"
+  "browserslist@<4.28.7": "4.28.9"

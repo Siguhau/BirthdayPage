@@ -1,23 +1,31 @@
 import { useEffect, useState } from "react";
+import type { FireworksRenderer } from "../components/birthday/fireworksTypes";
 import BirthdayPreviewControls from "../components/preview/BirthdayPreviewControls";
+import { useTheme } from "../theme/useTheme";
 import BirthdayPageView from "./BirthdayPageView";
+import type { BirthdayExperiencePage } from "./birthdayExperiencePage";
 
-const previewDurationMs = 5_000;
+const previewDurationMs = 10_000;
 
 const BirthdayTransitionPreview = () => {
   const [targetDate, setTargetDate] = useState(
     () => Date.now() + previewDurationMs,
   );
-  const [isBirthday, setIsBirthday] = useState(false);
+  const [page, setPage] = useState<BirthdayExperiencePage>("countdown");
+  const [transitionThroughDoor, setTransitionThroughDoor] = useState(true);
+  const [fireworksRenderer, setFireworksRenderer] =
+    useState<FireworksRenderer>("combined");
+  const { setTheme } = useTheme();
 
   useEffect(() => {
-    if (isBirthday) {
+    if (page !== "countdown") {
       return;
     }
 
     const timeout = window.setTimeout(
       () => {
-        setIsBirthday(true);
+        setPage("escape-room");
+        setTheme("escape-room");
       },
       Math.max(0, targetDate - Date.now()),
     );
@@ -25,21 +33,39 @@ const BirthdayTransitionPreview = () => {
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [isBirthday, targetDate]);
+  }, [page, setTheme, targetDate]);
 
   const restartCountdown = () => {
+    setTransitionThroughDoor(true);
     setTargetDate(Date.now() + previewDurationMs);
-    setIsBirthday(false);
+    setPage("countdown");
   };
 
   return (
     <>
-      <BirthdayPageView isBirthday={isBirthday} targetDate={targetDate} />
+      <BirthdayPageView
+        transitionThroughDoor={transitionThroughDoor}
+        fireworksRenderer={fireworksRenderer}
+        onEscapeRoomComplete={() => {
+          setPage("birthday");
+          setTheme("escape-room");
+        }}
+        page={page}
+        targetDate={targetDate}
+      />
       <BirthdayPreviewControls
-        isBirthday={isBirthday}
+        fireworksRenderer={fireworksRenderer}
+        page={page}
+        onFireworksRendererChange={setFireworksRenderer}
         onRestartCountdown={restartCountdown}
         onShowBirthday={() => {
-          setIsBirthday(true);
+          setPage("birthday");
+          setTheme("escape-room");
+        }}
+        onShowEscapeRoom={() => {
+          setTransitionThroughDoor(false);
+          setPage("escape-room");
+          setTheme("escape-room");
         }}
       />
     </>

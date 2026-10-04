@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./BirthdayConfetti.css";
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 

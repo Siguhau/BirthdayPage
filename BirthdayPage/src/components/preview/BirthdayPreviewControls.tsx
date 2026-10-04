@@ -1,66 +1,72 @@
+import type { FireworksRenderer } from "../birthday/fireworksTypes";
+import type { BirthdayExperiencePage } from "../../pages/birthdayExperiencePage";
+import "./BirthdayPreviewControls.css";
+
 type BirthdayPreviewControlsProps = {
-  isBirthday: boolean;
+  fireworksRenderer: FireworksRenderer;
+  page: BirthdayExperiencePage;
+  onFireworksRendererChange: (renderer: FireworksRenderer) => void;
   onRestartCountdown: () => void;
   onShowBirthday: () => void;
-};
-
-const buttonStyle = {
-  border: "1px solid rgba(255, 255, 255, 0.25)",
-  borderRadius: "999px",
-  color: "white",
-  cursor: "pointer",
-  font: "inherit",
-  fontWeight: 600,
-  padding: "0.65rem 1rem",
+  onShowEscapeRoom: () => void;
 };
 
 const BirthdayPreviewControls = ({
-  isBirthday,
+  fireworksRenderer,
+  page,
+  onFireworksRendererChange,
   onRestartCountdown,
   onShowBirthday,
-}: BirthdayPreviewControlsProps) => (
-  <div
-    aria-label="Birthday preview controls"
-    role="group"
-    style={{
-      position: "fixed",
-      right: "1rem",
-      bottom: "1rem",
-      zIndex: 1000,
-      display: "flex",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      gap: "0.5rem",
-      padding: "0.75rem",
-      borderRadius: "1rem",
-      background: "rgba(15, 15, 25, 0.82)",
-      boxShadow: "0 0.5rem 1.5rem rgba(0, 0, 0, 0.35)",
-      backdropFilter: "blur(8px)",
-    }}
-  >
-    <button
-      aria-pressed={!isBirthday}
-      onClick={onRestartCountdown}
-      style={{
-        ...buttonStyle,
-        background: !isBirthday ? "rgba(255, 255, 255, 0.18)" : "transparent",
-      }}
-      type="button"
+  onShowEscapeRoom,
+}: BirthdayPreviewControlsProps) => {
+  return (
+    <div
+      aria-label="Birthday preview controls"
+      className="birthday-preview-controls"
+      role="group"
     >
-      Restart 5-second countdown
-    </button>
-    <button
-      aria-pressed={isBirthday}
-      onClick={onShowBirthday}
-      style={{
-        ...buttonStyle,
-        background: isBirthday ? "rgba(255, 255, 255, 0.18)" : "transparent",
-      }}
-      type="button"
-    >
-      Show birthday greeting
-    </button>
-  </div>
-);
+      <button
+        aria-pressed={page === "countdown"}
+        className="birthday-preview-controls__button"
+        onClick={onRestartCountdown}
+        type="button"
+      >
+        Restart 10-second countdown
+      </button>
+      <button
+        aria-pressed={page === "escape-room"}
+        className="birthday-preview-controls__button"
+        onClick={onShowEscapeRoom}
+        type="button"
+      >
+        Show escape room entry
+      </button>
+      <button
+        aria-pressed={page === "birthday"}
+        className="birthday-preview-controls__button"
+        onClick={onShowBirthday}
+        type="button"
+      >
+        Show birthday finale
+      </button>
+      <label className="birthday-preview-controls__field">
+        <span>Fireworks</span>
+        <select
+          aria-label="Fireworks renderer"
+          className="birthday-preview-controls__select"
+          onChange={(event) => {
+            onFireworksRendererChange(event.target.value as FireworksRenderer);
+          }}
+          value={fireworksRenderer}
+        >
+          <option value="custom">Custom</option>
+          <option value="fireworks-js">fireworks-js</option>
+          <option value="tsparticles">tsParticles</option>
+          <option value="combined">Combined</option>
+        </select>
+      </label>
+    </div>
+  );
+};
 
 export default BirthdayPreviewControls;

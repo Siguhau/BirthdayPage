@@ -1,0 +1,116 @@
+.escape-room-puzzle:has(.sliding-tiles) .escape-room-game__title {
+  font-size: clamp(2rem, 5vw, 2.5rem);
+}
+
+.escape-room-puzzle:has(.sliding-tiles) .escape-room-game__description {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.escape-room-puzzle__content:has(> .sliding-tiles) {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.sliding-tiles {
+  width: 100%;
+  color: var(--theme-text-primary);
+}
+
+.sliding-tiles__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.sliding-tiles__board {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2048 / 1365;
+  border: 5px solid #c6a779;
+  border-radius: 0.5rem;
+  background: #171e29;
+  box-shadow: 0 0.5rem 1.5rem #0004;
+}
+
+.sliding-tiles__tile,
+.sliding-tiles__blank {
+  position: absolute;
+  width: calc(100% / 3 - 3px);
+  height: calc(100% / 3 - 3px);
+  margin: 1.5px;
+}
+
+.sliding-tiles__tile {
+  min-width: 0;
+  padding: 0.3rem;
+  border: 0;
+  border-radius: 2px;
+  background-size: 300% 300%;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+  transition:
+    left 150ms ease-out,
+    top 150ms ease-out;
+}
+
+.sliding-tiles__tile[aria-disabled="true"] {
+  cursor: default;
+}
+
+.sliding-tiles__tile[aria-disabled="false"]:hover {
+  box-shadow: inset 0 0 0 3px #ffedbd;
+}
+
+.sliding-tiles__blank {
+  border: 1px dashed #c6a77955;
+  border-radius: 2px;
+  background: #ffffff05;
+}
+
+.sliding-tiles__completed {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sliding-tiles__tile {
+    transition: none;
+  }
+}
+
+.sliding-tiles__controls p,
+.sliding-tiles__status {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.sliding-tiles__status {
+  margin-top: 0.75rem;
+}
+
+.sliding-tiles__reset {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.sliding-tiles :focus-visible {
+  outline: 3px solid var(--theme-focus);
+  outline-offset: 3px;
+}
+
+.sliding-tiles__tile:focus-visible {
+  outline-offset: -3px;
+}

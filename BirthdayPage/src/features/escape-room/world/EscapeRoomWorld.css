@@ -1,0 +1,611 @@
+.escape-room-world {
+  --world-accent: #f2b84b;
+  --world-background: #11182b;
+  --world-panel: rgba(13, 22, 43, 0.9);
+  --world-text: #fff6dc;
+
+  position: absolute;
+  overflow: hidden;
+  background: var(--world-background);
+  color: var(--world-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  inset: 0;
+  transition: background-color 500ms ease;
+}
+
+.escape-room-world canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.escape-room-world__hud {
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+}
+
+.escape-room-world__area {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  left: max(1rem, env(safe-area-inset-left));
+  display: flex;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 35%, transparent);
+  border-radius: 0.75rem;
+  background: var(--world-panel);
+  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  text-align: left;
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
+}
+
+.escape-room-world__inventory {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  display: flex;
+  min-width: 8.5rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 35%, transparent);
+  border-radius: 0.75rem;
+  background: var(--world-panel);
+  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  pointer-events: none;
+  text-align: right;
+}
+
+.escape-room-world__inventory span {
+  color: var(--world-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.escape-room-world__inventory strong {
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+}
+
+.escape-room-world__area span,
+.escape-room-world__eyebrow {
+  color: var(--world-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.escape-room-world__area strong {
+  margin-top: 0.15rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+}
+
+.escape-room-world__reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.7);
+  transform: translate(-50%, -50%);
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.escape-room-world__reticle--active {
+  border-color: var(--world-accent);
+  transform: translate(-50%, -50%) scale(1.35);
+}
+
+.escape-room-world__prompt,
+.escape-room-world__controls,
+.escape-room-world__notice {
+  position: absolute;
+  left: 50%;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 38%, transparent);
+  border-radius: 999px;
+  background: var(--world-panel);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);
+  color: var(--world-text);
+  transform: translateX(-50%);
+}
+
+.escape-room-world__cc {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 5.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.4rem;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.88);
+  color: #fff;
+  font-weight: 800;
+  transform: translateX(-50%);
+}
+
+.escape-room-world__prompt {
+  bottom: 7rem;
+  padding: 0.65rem 0.9rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.escape-room-world__prompt kbd {
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--world-accent);
+  border-radius: 0.25rem;
+  margin-right: 0.35rem;
+  background: color-mix(in srgb, var(--world-accent) 18%, transparent);
+  font: inherit;
+  font-weight: 900;
+}
+
+.escape-room-world__controls {
+  bottom: 1rem;
+  padding: 0.45rem 0.75rem;
+  margin: 0;
+  color: color-mix(in srgb, var(--world-text) 78%, transparent);
+  font-size: 0.72rem;
+}
+
+.escape-room-world__notice {
+  z-index: 7;
+  bottom: 10.5rem;
+  max-width: min(32rem, calc(100% - 2rem));
+  padding: 0.85rem 1.1rem;
+  border-radius: 0.9rem;
+  pointer-events: auto;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.escape-room-world__photo-countdown {
+  position: absolute;
+  top: 17%;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  min-width: 13rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 65%, transparent);
+  border-radius: 1rem;
+  align-items: center;
+  background: var(--world-panel);
+  box-shadow:
+    0 1rem 2.5rem rgba(0, 0, 0, 0.32),
+    0 0 1.5rem color-mix(in srgb, var(--world-accent) 24%, transparent);
+  gap: 0.8rem;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.escape-room-world__photo-countdown strong {
+  color: var(--world-accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.escape-room-world__photo-countdown span {
+  max-width: 10rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.escape-room-world__photo-flash {
+  position: absolute;
+  z-index: 12;
+  background: white;
+  pointer-events: none;
+  inset: 0;
+  animation: escape-room-photo-flash 360ms ease-out both;
+}
+
+@keyframes escape-room-photo-flash {
+  from {
+    opacity: 0.95;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.escape-room-world__photo-modal-backdrop {
+  position: absolute;
+  z-index: 11;
+  display: grid;
+  padding: 1rem;
+  background: rgba(4, 7, 14, 0.78);
+  backdrop-filter: blur(12px);
+  place-items: center;
+  inset: 0;
+}
+
+.escape-room-world__photo-modal {
+  width: min(30rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 48%, transparent);
+  border-radius: 1.25rem;
+  overflow-y: auto;
+  background: var(--world-panel);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.escape-room-world__photo-modal-eyebrow {
+  margin: 0;
+  color: var(--world-accent);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.escape-room-world__photo-modal h2 {
+  margin: 0.35rem 0 1rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.6rem, 6vw, 2.35rem);
+}
+
+.escape-room-world__longboi-photo {
+  padding: 0.65rem 0.65rem 2.1rem;
+  border-radius: 0.3rem;
+  background: #f5f0e5;
+  box-shadow:
+    0 1rem 2rem rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.18);
+  color: #18202b;
+  transform: rotate(-1deg);
+}
+
+.escape-room-world__longboi-photo[data-result="failure"] {
+  transform: rotate(1deg);
+}
+
+.escape-room-world__longboi-photo img,
+.escape-room-world__longboi-placeholder {
+  display: flex;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+}
+
+.escape-room-world__longboi-photo img {
+  object-fit: cover;
+}
+
+.escape-room-world__longboi-placeholder {
+  background:
+    radial-gradient(circle at 50% 34%, #f7c0b5 0 8%, transparent 8.5%),
+    linear-gradient(145deg, #58a8b9, #272a56 58%, #151830);
+  color: white;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.7);
+}
+
+.escape-room-world__longboi-photo[data-result="failure"]
+  .escape-room-world__longboi-placeholder {
+  background:
+    radial-gradient(circle at 28% 42%, #e7a87f 0 7%, transparent 7.5%),
+    linear-gradient(145deg, #956c96, #3b3158 58%, #211f36);
+}
+
+.escape-room-world__longboi-placeholder span {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.escape-room-world__longboi-placeholder strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.3rem, 6vw, 2rem);
+}
+
+.escape-room-world__photo-modal-details,
+.escape-room-world__photo-modal-reward {
+  margin: 1rem 0 0;
+  color: color-mix(in srgb, var(--world-text) 82%, transparent);
+  line-height: 1.5;
+}
+
+.escape-room-world__photo-modal-reward {
+  color: var(--world-accent);
+  font-weight: 800;
+}
+
+.escape-room-world__photo-modal button {
+  margin-top: 1.1rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 58%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--world-accent) 18%, var(--world-panel));
+  color: var(--world-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.escape-room-world__cipher-plaque {
+  text-align: left;
+}
+
+.escape-room-world__cipher-plaque h2 {
+  text-align: center;
+}
+
+.escape-room-world__cipher-plaque .escape-room-world__photo-modal-eyebrow {
+  text-align: center;
+}
+
+.escape-room-world__cipher-plaque
+  p:not(.escape-room-world__photo-modal-eyebrow) {
+  margin: 0.85rem 0 0;
+  color: color-mix(in srgb, var(--world-text) 86%, transparent);
+  line-height: 1.55;
+}
+
+.escape-room-world__cipher-plaque .escape-room-world__cipher-formula {
+  display: grid;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 42%, transparent);
+  border-radius: 0.65rem;
+  background: rgba(0, 0, 0, 0.18);
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.escape-room-world__cipher-formula code {
+  color: var(--world-accent);
+  font-size: clamp(0.92rem, 4vw, 1.1rem);
+  font-weight: 800;
+}
+
+.escape-room-world__cipher-formula span {
+  font-size: 0.82rem;
+  opacity: 0.76;
+}
+
+.escape-room-world__cipher-plaque button {
+  display: block;
+  margin-inline: auto;
+}
+
+.escape-room-world__laser-panel p:not(.escape-room-world__photo-modal-eyebrow) {
+  color: color-mix(in srgb, var(--world-text) 82%, transparent);
+  line-height: 1.5;
+}
+
+.escape-room-world__laser-status {
+  display: inline-flex;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(104, 239, 255, 0.55);
+  border-radius: 999px;
+  align-items: center;
+  background: rgba(35, 211, 230, 0.12);
+  color: #b9fbff;
+  font-weight: 850;
+  gap: 0.5rem;
+}
+
+.escape-room-world__laser-status span {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  animation: laser-panel-pulse 1.4s ease-in-out infinite;
+  background: #4cf0ff;
+  box-shadow: 0 0 1rem #4cf0ff;
+}
+
+@keyframes laser-panel-pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+.escape-room-world__code-display {
+  display: block;
+  width: min(16rem, 100%);
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(99, 230, 255, 0.55);
+  border-radius: 0.55rem;
+  margin: 0 auto 1rem;
+  background: #031117;
+  color: #69efff;
+  font-family: "Courier New", monospace;
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-indent: 0.3em;
+  text-shadow: 0 0 0.8rem rgba(79, 234, 255, 0.65);
+}
+
+.escape-room-world__keypad {
+  display: grid;
+  width: min(16rem, 100%);
+  margin: auto;
+  gap: 0.45rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.escape-room-world__keypad button {
+  min-height: 3rem;
+  padding: 0;
+  margin: 0;
+  border-radius: 0.55rem;
+}
+
+.escape-room-world__keypad button:last-child {
+  grid-column: 2;
+}
+
+.escape-room-world__panel-submit {
+  border-color: #63e6ff !important;
+  background: rgba(68, 224, 244, 0.16) !important;
+}
+
+.escape-room-world__panel-submit:disabled,
+.escape-room-world__keypad button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.escape-room-world__panel-feedback {
+  min-height: 1.5rem;
+  margin: 0.75rem 0 0 !important;
+  font-size: 0.86rem;
+}
+
+.escape-room-world__trapdoor-code
+  p:not(.escape-room-world__photo-modal-eyebrow) {
+  color: color-mix(in srgb, var(--world-text) 82%, transparent);
+  line-height: 1.5;
+}
+
+.escape-room-world__trapdoor-code form {
+  display: grid;
+  margin-top: 1rem;
+  gap: 0.65rem;
+}
+
+.escape-room-world__trapdoor-code label {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.escape-room-world__trapdoor-code input {
+  width: min(18rem, 100%);
+  padding: 0.75rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 58%, transparent);
+  border-radius: 0.55rem;
+  margin: auto;
+  background: #100b08;
+  color: var(--world-accent);
+  font:
+    800 1.5rem/1 "Courier New",
+    monospace;
+  letter-spacing: 0.24em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.escape-room-world__trapdoor-code form button {
+  margin-top: 0.2rem;
+}
+
+.escape-room-world__overlay {
+  position: absolute;
+  display: grid;
+  padding: 1rem;
+  background: rgba(3, 7, 14, 0.72);
+  backdrop-filter: blur(10px);
+  place-items: center;
+  inset: 0;
+}
+
+.escape-room-world__menu {
+  width: min(28rem, 100%);
+  padding: 2rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 42%, transparent);
+  border-radius: 1.25rem;
+  background: var(--world-panel);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.escape-room-world__menu h1 {
+  margin: 0.4rem 0 1.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 8vw, 3rem);
+}
+
+.escape-room-world__menu-copy,
+.escape-room-world__confirmation p {
+  color: color-mix(in srgb, var(--world-text) 78%, transparent);
+  line-height: 1.6;
+}
+
+.escape-room-world__menu-actions,
+.escape-room-world__confirmation {
+  display: flex;
+  gap: 0.75rem;
+  flex-direction: column;
+}
+
+.escape-room-world__menu button {
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--world-accent) 16%, var(--world-panel));
+  color: var(--world-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+}
+
+.escape-room-world button:focus-visible {
+  outline: 3px solid var(--world-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escape-room-world,
+  .escape-room-world__area,
+  .escape-room-world__reticle {
+    transition: none;
+  }
+
+  .escape-room-world__photo-flash {
+    animation-duration: 80ms;
+  }
+}
+
+.camera-vending {
+  max-width: 36rem;
+  margin: auto;
+  text-align: center;
+  color: var(--world-text);
+}
+.camera-vending p {
+  line-height: 1.6;
+}
+.camera-vending__games {
+  padding: 0;
+  list-style: none;
+  line-height: 1.8;
+}
+.camera-vending__rewards {
+  display: grid;
+  gap: 0.75rem;
+}
+.camera-vending__rewards button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
