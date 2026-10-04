@@ -1,3 +1,4 @@
+import { trapdoorCipherPlaintext } from "../puzzles/trapdoorCipher";
 import { useMemo } from "react";
 import { CanvasTexture, SRGBColorSpace } from "three";
 
@@ -17,7 +18,11 @@ const TrapdoorCipherClue = () => {
       context.font = "bold 92px Georgia, serif";
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText("JUNAR", canvas.width / 2, canvas.height / 2 + 4);
+      context.fillText(
+        trapdoorCipherPlaintext.toUpperCase(),
+        canvas.width / 2,
+        canvas.height / 2 + 4,
+      );
     }
     const nextTexture = new CanvasTexture(canvas);
     nextTexture.colorSpace = SRGBColorSpace;

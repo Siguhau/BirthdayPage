@@ -35,7 +35,7 @@ const LaserPanelModal = ({
       setFeedback("Koden godtas. Laseren er aktiv.");
       return;
     }
-    setFeedback("Feil kode. Se på tallene fra de tre arkadenivåene.");
+    setFeedback("Feil kode.");
     setCode("");
   };
 
@@ -62,9 +62,6 @@ const LaserPanelModal = ({
             >
               <span /> Laser aktiv
             </div>
-            <p>
-              Plasser speilene i soklene og drei dem til strålen når kjelleren.
-            </p>
           </>
         ) : (
           <>

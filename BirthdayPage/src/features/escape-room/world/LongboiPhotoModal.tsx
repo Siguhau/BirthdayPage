@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import type { LongboiPhoto } from "../puzzles/longboiPhotos";
 
 export type LongboiPhotoResult = {
-  collectedCount: number;
   details: string;
   photo: LongboiPhoto;
+  savedToInventory: boolean;
 };
 
 type LongboiPhotoModalProps = {
@@ -41,7 +41,9 @@ const LongboiPhotoModal = ({ onClose, result }: LongboiPhotoModalProps) => {
         </p>
         <h2 id="longboi-photo-title">
           {successful
-            ? `${String(result.collectedCount)} av 2 samlet`
+            ? result.savedToInventory
+              ? "Et Longboi-bilde"
+              : "Et nytt Longboi-bilde"
             : "Bildet ble ikke godkjent"}
         </h2>
 
@@ -62,7 +64,7 @@ const LongboiPhotoModal = ({ onClose, result }: LongboiPhotoModalProps) => {
         <p className="escape-room-world__photo-modal-details">
           {result.details}
         </p>
-        {successful && (
+        {result.savedToInventory && (
           <p className="escape-room-world__photo-modal-reward">
             Longboi-bildet er lagt i inventaret.
           </p>

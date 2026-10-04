@@ -3,7 +3,7 @@ import usePrefersReducedMotion from "../../utils/usePrefersReducedMotion";
 import FireworksJsDisplay from "./FireworksJsDisplay";
 import TsParticlesFireworks from "./TsParticlesFireworks";
 import type { FireworksRenderer } from "./fireworksTypes";
-const particleCount = 24;
+const particleCount = 48;
 
 const colorPalettes = [
   ["#ff4d6d", "#ff8fa3", "#ffd6e0"],
@@ -32,15 +32,17 @@ type FireworkStyle = CSSProperties & {
 };
 
 type ParticleStyle = CSSProperties & {
-  "--firework-particle-angle": string;
+  "--firework-particle-x": string;
+  "--firework-particle-y": string;
+  "--firework-particle-fall": string;
+  "--firework-particle-life": string;
   "--firework-particle-color": string;
-  "--firework-particle-distance": string;
   "--firework-particle-orientation": string;
 };
 
 const createFirework = (id: number): Firework => ({
   id,
-  launchDurationMs: 550 + Math.random() * 200,
+  launchDurationMs: 900 + Math.random() * 450,
   left: 12 + Math.random() * 76,
   palette: colorPalettes[(id - 1) % colorPalettes.length] ?? colorPalettes[0],
   pattern: burstPatterns[(id - 1) % burstPatterns.length] ?? burstPatterns[0],
@@ -90,9 +92,9 @@ const CustomBirthdayFireworks = ({
             (currentFirework) => currentFirework.id !== firework.id,
           ),
         );
-      }, firework.launchDurationMs + 1_500);
+      }, firework.launchDurationMs + 2_800);
 
-      scheduleTimeout(launchFirework, 400 + Math.random() * 350);
+      scheduleTimeout(launchFirework, 650 + Math.random() * 450);
     };
 
     scheduleTimeout(launchFirework, 100);
@@ -132,21 +134,21 @@ const CustomBirthdayFireworks = ({
             <span className="birthday-firework__flash" />
             <span className="birthday-firework__burst">
               {Array.from({ length: particleCount }, (_, index) => {
+                const angle = (Math.PI * 2 * index) / particleCount;
+                // Project shells of varying depth, rather than a flat starburst.
+                const radius =
+                  firework.pattern === "ring"
+                    ? 155
+                    : 65 + ((index * 37 + firework.id * 13) % 120);
                 const particleStyle: ParticleStyle = {
-                  "--firework-particle-angle": `${String(
-                    (360 / particleCount) * index,
-                  )}deg`,
+                  "--firework-particle-x": `${String(Math.cos(angle) * radius)}px`,
+                  "--firework-particle-y": `${String(Math.sin(angle) * radius)}px`,
+                  "--firework-particle-fall": `${String(85 + (index % 7) * 12)}px`,
+                  "--firework-particle-life": `${String(1_900 + (index % 9) * 95)}ms`,
                   "--firework-particle-color":
                     firework.palette[index % firework.palette.length] ??
                     firework.palette[0],
-                  "--firework-particle-distance": `${String(
-                    80 + ((index * 17 + firework.id * 11) % 75),
-                  )}px`,
-                  "--firework-particle-orientation":
-                    firework.pattern === "ring" ||
-                    (firework.pattern === "mixed" && index % 2 === 1)
-                      ? "90deg"
-                      : "0deg",
+                  "--firework-particle-orientation": `${String((angle * 180) / Math.PI + 90)}deg`,
                 };
 
                 return (
@@ -169,7 +171,9 @@ type BirthdayFireworksProps = {
   renderer?: FireworksRenderer;
 };
 
-const BirthdayFireworks = ({ renderer = "custom" }: BirthdayFireworksProps) => {
+const BirthdayFireworks = ({
+  renderer = "combined",
+}: BirthdayFireworksProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   if (prefersReducedMotion) return null;

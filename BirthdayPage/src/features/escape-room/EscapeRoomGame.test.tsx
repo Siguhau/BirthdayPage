@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EscapeRoomGame from "./EscapeRoomGame";
+import {
+  correctVaseTileIds,
+  vaseCaptchaTiles,
+} from "./puzzles/vaseCaptchaConfig";
 
 const supportMock = vi.hoisted(() => vi.fn());
 
@@ -14,18 +18,26 @@ vi.mock("./world/EscapeRoomWorld", () => ({
     inventoryItemIds,
     onInstallItem,
     onOpenPuzzle,
-    onPickUpItem,
+    onRedeemCameraReward,
     onReset,
   }: {
     installedItemIds: readonly string[];
     inventoryItemIds: readonly string[];
     onInstallItem: (itemId: "camera-battery") => void;
-    onOpenPuzzle: (puzzleId: "vase-captcha") => void;
-    onPickUpItem: (itemId: "camera-battery") => void;
+    onOpenPuzzle: (puzzleId: "vase-captcha" | "brita-sliding-tiles") => void;
+    onRedeemCameraReward: (itemId: "camera-battery") => void;
     onReset: () => void;
   }) => (
     <section>
       <h1>Memory Gallery</h1>
+      <button
+        onClick={() => {
+          onOpenPuzzle("brita-sliding-tiles");
+        }}
+        type="button"
+      >
+        Open Brita puzzle
+      </button>
       <button
         onClick={() => {
           onOpenPuzzle("vase-captcha");
@@ -43,11 +55,11 @@ vi.mock("./world/EscapeRoomWorld", () => ({
       </output>
       <button
         onClick={() => {
-          onPickUpItem("camera-battery");
+          onRedeemCameraReward("camera-battery");
         }}
         type="button"
       >
-        Pick up battery
+        Redeem battery
       </button>
       <button
         onClick={() => {
@@ -69,10 +81,24 @@ describe("EscapeRoomGame", () => {
     supportMock.mockReturnValue({ supported: true });
   });
 
+  it("opens Brita's registered puzzle and closes it with Escape", async () => {
+    render(<EscapeRoomGame onComplete={vi.fn()} userName="Runar" />);
+    fireEvent.click(screen.getByRole("button", { name: "Åpne døren" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Open Brita puzzle" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "Brita i biter" }),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Lukk gåten" })).toHaveFocus();
+    fireEvent.keyDown(window, { code: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("starts the lazy walking prototype and can reset to the introduction", async () => {
     render(<EscapeRoomGame onComplete={vi.fn()} userName="Runar" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
+    fireEvent.click(screen.getByRole("button", { name: "Åpne døren" }));
     expect(
       await screen.findByRole("heading", { name: "Memory Gallery" }),
     ).toBeInTheDocument();
@@ -80,7 +106,7 @@ describe("EscapeRoomGame", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reset world" }));
     expect(
       screen.getByRole("heading", {
-        name: "Velkommen til rømningsrommet, Runar",
+        name: "Kjelleren til mor",
       }),
     ).toBeInTheDocument();
   });
@@ -88,7 +114,7 @@ describe("EscapeRoomGame", () => {
   it("opens and closes the registered captcha puzzle from the world", async () => {
     render(<EscapeRoomGame onComplete={vi.fn()} userName="Runar" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
+    fireEvent.click(screen.getByRole("button", { name: "Åpne døren" }));
     await screen.findByRole("heading", { name: "Memory Gallery" });
     fireEvent.click(screen.getByRole("button", { name: "Open captcha" }));
 
@@ -105,17 +131,39 @@ describe("EscapeRoomGame", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("moves a collected battery from inventory into the camera", async () => {
+  it("redeems an earned token for a battery and installs it", async () => {
     render(<EscapeRoomGame onComplete={vi.fn()} userName="Runar" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Begynn oppdraget" }));
+    fireEvent.click(screen.getByRole("button", { name: "Åpne døren" }));
     await screen.findByRole("heading", { name: "Memory Gallery" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Pick up battery" }));
+    fireEvent.click(screen.getByRole("button", { name: "Redeem battery" }));
+    expect(screen.getByText("No battery")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open captcha" }));
+    for (const tile of vaseCaptchaTiles) {
+      if (correctVaseTileIds.includes(tile.id)) {
+        fireEvent.click(
+          screen.getByRole("button", { name: `${tile.alt}. Ikke valgt` }),
+        );
+      }
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Bekreft" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Redeem battery" }));
     expect(screen.getByText("Battery carried")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Install battery" }));
     expect(screen.getByText("Battery installed")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset world" }));
+    fireEvent.click(screen.getByRole("button", { name: "Åpne døren" }));
+    await screen.findByRole("heading", { name: "Memory Gallery" });
+    fireEvent.click(screen.getByRole("button", { name: "Redeem battery" }));
+    expect(screen.getByText("No battery")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open captcha" }));
+    expect(
+      screen.getByRole("dialog", { name: "Aktiv gåte" }),
+    ).toBeInTheDocument();
   });
 
   it("explains an unsupported path before continuing to the celebration", () => {

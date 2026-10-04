@@ -2,6 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { useRef } from "react";
 import { Group, MathUtils } from "three";
+import { interactionOccluderKey } from "./interactionOcclusion";
 import { trapdoorPosition } from "./worldConfig";
 
 const BasementTrapdoor = ({ open }: { open: boolean }) => {
@@ -37,7 +38,11 @@ const BasementTrapdoor = ({ open }: { open: boolean }) => {
 
       <group position={[-1.3, 0, 0]} ref={lidPivotRef}>
         <group position={[1.3, 0, 0]}>
-          <mesh castShadow receiveShadow>
+          <mesh
+            castShadow
+            receiveShadow
+            userData={open ? {} : { [interactionOccluderKey]: true }}
+          >
             <boxGeometry args={[2.6, 0.16, 3]} />
             <meshStandardMaterial
               color="#49301d"
@@ -59,7 +64,11 @@ const BasementTrapdoor = ({ open }: { open: boolean }) => {
       </group>
 
       <group position={[0, 0.13, 0]} ref={carpetRef}>
-        <mesh castShadow receiveShadow>
+        <mesh
+          castShadow
+          receiveShadow
+          userData={open ? {} : { [interactionOccluderKey]: true }}
+        >
           <boxGeometry args={[3, 0.05, 3.4]} />
           <meshStandardMaterial color="#7d2335" roughness={0.96} />
         </mesh>

@@ -39,10 +39,6 @@ const CipherPlaqueModal = ({ onClose }: { onClose: () => void }) => {
           <code>decrypt(C) = (C − K) mod 26</code>
           <span>A = 0, B = 1, … Z = 25</span>
         </p>
-        <p>
-          Hvis resultatet ikke gir mening, kan hæren ha marsjert i motsatt
-          retning.
-        </p>
         <button autoFocus onClick={onClose} type="button">
           Legg fra deg plaketten
         </button>

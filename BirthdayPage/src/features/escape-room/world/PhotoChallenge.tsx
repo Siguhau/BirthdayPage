@@ -10,16 +10,23 @@ type PhotoChallengeProps = {
   attemptId: number;
   onCountdownChange: (seconds: number) => void;
   onResult: (result: PhotoPoseResult) => void;
+  paused?: boolean;
 };
 
 const PhotoChallenge = ({
   attemptId,
   onCountdownChange,
   onResult,
+  paused = false,
 }: PhotoChallengeProps) => {
   const { camera } = useThree();
   const onCountdownChangeRef = useRef(onCountdownChange);
   const onResultRef = useRef(onResult);
+  const activeAttemptIdRef = useRef(0);
+  const completedAttemptIdRef = useRef(0);
+  const lastCountdownRef = useRef<number | undefined>(undefined);
+  const remainingMillisecondsRef = useRef(0);
+  const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     onCountdownChangeRef.current = onCountdownChange;
@@ -29,18 +36,25 @@ const PhotoChallenge = ({
   useEffect(() => {
     if (attemptId === 0) return;
 
-    let secondsRemaining = countdownSeconds;
-    onCountdownChangeRef.current(secondsRemaining);
+    if (activeAttemptIdRef.current !== attemptId) {
+      activeAttemptIdRef.current = attemptId;
+      completedAttemptIdRef.current = 0;
+      lastCountdownRef.current = undefined;
+      remainingMillisecondsRef.current = countdownSeconds * 1_000;
+    }
 
-    const interval = window.setInterval(() => {
-      secondsRemaining -= 1;
+    if (paused || completedAttemptIdRef.current === attemptId) return;
 
-      if (secondsRemaining > 0) {
-        onCountdownChangeRef.current(secondsRemaining);
-        return;
-      }
+    const publishCountdown = () => {
+      const seconds = Math.ceil(remainingMillisecondsRef.current / 1_000);
+      if (seconds === lastCountdownRef.current) return;
+      lastCountdownRef.current = seconds;
+      onCountdownChangeRef.current(seconds);
+    };
 
-      window.clearInterval(interval);
+    const finishAttempt = () => {
+      completedAttemptIdRef.current = attemptId;
+      startedAtRef.current = null;
       const lookDirection = camera.getWorldDirection(new Vector3());
       onResultRef.current(
         evaluatePhotoPose({
@@ -53,12 +67,57 @@ const PhotoChallenge = ({
           ],
         }),
       );
-    }, 1_000);
+    };
+
+    const scheduleNextTick = () => {
+      if (remainingMillisecondsRef.current <= 0) {
+        finishAttempt();
+        return;
+      }
+
+      const displayedSeconds = Math.ceil(
+        remainingMillisecondsRef.current / 1_000,
+      );
+      const millisecondsUntilNextSecond =
+        remainingMillisecondsRef.current - (displayedSeconds - 1) * 1_000;
+
+      timeout = window.setTimeout(() => {
+        const now = Date.now();
+        const startedAt = startedAtRef.current;
+        if (startedAt === null) return;
+        remainingMillisecondsRef.current = Math.max(
+          0,
+          remainingMillisecondsRef.current - (now - startedAt),
+        );
+        startedAtRef.current = now;
+
+        if (remainingMillisecondsRef.current <= 0) {
+          finishAttempt();
+          return;
+        }
+
+        publishCountdown();
+        scheduleNextTick();
+      }, millisecondsUntilNextSecond);
+    };
+
+    publishCountdown();
+    startedAtRef.current = Date.now();
+    let timeout: number;
+    scheduleNextTick();
 
     return () => {
-      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+      if (startedAtRef.current !== null) {
+        remainingMillisecondsRef.current = Math.max(
+          0,
+          remainingMillisecondsRef.current -
+            (Date.now() - startedAtRef.current),
+        );
+        startedAtRef.current = null;
+      }
     };
-  }, [attemptId, camera]);
+  }, [attemptId, camera, paused]);
 
   return null;
 };

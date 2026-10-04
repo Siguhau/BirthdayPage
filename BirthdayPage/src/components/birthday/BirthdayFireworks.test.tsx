@@ -27,7 +27,7 @@ describe("BirthdayFireworks", () => {
 
   it("launches a rocket that bursts into colorful particles", () => {
     mockReducedMotionPreference(false);
-    render(<BirthdayFireworks />);
+    render(<BirthdayFireworks renderer="custom" />);
 
     act(() => {
       vi.advanceTimersByTime(100);
@@ -43,7 +43,7 @@ describe("BirthdayFireworks", () => {
     ).toBeInTheDocument();
     expect(
       firework.querySelectorAll(".birthday-firework__particle"),
-    ).toHaveLength(24);
+    ).toHaveLength(48);
 
     act(() => {
       vi.advanceTimersByTime(200);
@@ -58,7 +58,7 @@ describe("BirthdayFireworks", () => {
   it("does not schedule fireworks when reduced motion is preferred", () => {
     mockReducedMotionPreference(true);
 
-    render(<BirthdayFireworks />);
+    render(<BirthdayFireworks renderer="custom" />);
 
     expect(document.querySelector(".birthday-fireworks")).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
@@ -79,7 +79,7 @@ describe("BirthdayFireworks", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByTestId("tsparticles-display")).toBeInTheDocument();
 
-    rerender(<BirthdayFireworks renderer="combined" />);
+    rerender(<BirthdayFireworks />);
 
     expect(vi.getTimerCount()).toBe(1);
 
@@ -94,7 +94,7 @@ describe("BirthdayFireworks", () => {
 
   it("clears its scheduled launches when unmounted", () => {
     mockReducedMotionPreference(false);
-    const { unmount } = render(<BirthdayFireworks />);
+    const { unmount } = render(<BirthdayFireworks renderer="custom" />);
 
     expect(vi.getTimerCount()).toBe(2);
 

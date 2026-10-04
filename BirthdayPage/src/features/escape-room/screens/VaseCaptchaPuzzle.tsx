@@ -117,15 +117,6 @@ const VaseCaptchaPuzzle = ({
         >
           Bekreft
         </button>
-        {import.meta.env.DEV && (
-          <button
-            className="escape-room-game__action escape-room-game__action--secondary"
-            onClick={onSolve}
-            type="button"
-          >
-            Test fullføring
-          </button>
-        )}
       </form>
     </PuzzleLayout>
   );

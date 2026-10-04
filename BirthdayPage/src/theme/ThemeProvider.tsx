@@ -6,21 +6,22 @@ import {
 } from "react";
 import { ThemeContext } from "./ThemeContext";
 import type { ThemeName } from "./types";
+import { hasSeenThemeReveal, rememberThemeReveal } from "./themeReveal";
 
 type ThemeProviderProps = PropsWithChildren<{
   initialTheme?: ThemeName;
 }>;
 
-const ThemeProvider = ({
-  children,
-  initialTheme = "birthday",
-}: ThemeProviderProps) => {
-  const [theme, setTheme] = useState<ThemeName>(initialTheme);
+const ThemeProvider = ({ children, initialTheme }: ThemeProviderProps) => {
+  const [theme, setTheme] = useState<ThemeName>(
+    () => initialTheme ?? (hasSeenThemeReveal() ? "escape-room" : "birthday"),
+  );
 
   useLayoutEffect(() => {
     const rootElement = document.documentElement;
     const previousTheme = rootElement.getAttribute("data-theme");
     rootElement.setAttribute("data-theme", theme);
+    if (theme === "escape-room") rememberThemeReveal();
 
     return () => {
       if (previousTheme === null) {

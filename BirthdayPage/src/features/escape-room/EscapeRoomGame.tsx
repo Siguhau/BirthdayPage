@@ -8,10 +8,12 @@ import UnsupportedEscapeRoom from "./screens/UnsupportedEscapeRoom";
 import { gameReducer } from "./state/gameReducer";
 import { initialGameState } from "./state/gameTypes";
 import useEscapeRoomSupport from "./support/useEscapeRoomSupport";
-import { requestMouseLook } from "./world/mouseLook";
+import { releaseMouseLook, requestMouseLook } from "./world/mouseLook";
+import usePrefersReducedMotion from "../../utils/usePrefersReducedMotion";
 import "./EscapeRoomGame.css";
 
-const completionDelayMs = 1_200;
+// Matches the outgoing glow in EscapeRoomGame.css.
+const completionDelayMs = 2_400;
 const EscapeRoomWorld = lazy(() => import("./world/EscapeRoomWorld"));
 
 type EscapeRoomGameProps = {
@@ -21,6 +23,7 @@ type EscapeRoomGameProps = {
 
 const EscapeRoomGame = ({ onComplete, userName }: EscapeRoomGameProps) => {
   const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
+  const reducedMotion = usePrefersReducedMotion();
   const support = useEscapeRoomSupport();
   const ActivePuzzle =
     gameState.activePuzzleId === null
@@ -34,12 +37,16 @@ const EscapeRoomGame = ({ onComplete, userName }: EscapeRoomGameProps) => {
   useEffect(() => {
     if (gameState.stage !== "complete") return;
 
-    const timeout = window.setTimeout(onComplete, completionDelayMs);
+    releaseMouseLook();
+    const timeout = window.setTimeout(
+      onComplete,
+      reducedMotion ? 0 : completionDelayMs,
+    );
 
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [gameState.stage, onComplete]);
+  }, [gameState.stage, onComplete, reducedMotion]);
 
   if (!support.supported) {
     return (
@@ -63,16 +70,19 @@ const EscapeRoomGame = ({ onComplete, userName }: EscapeRoomGameProps) => {
           userName={userName}
         />
       )}
-      {gameState.stage === "exploring" && (
+      {gameState.stage !== "introduction" && (
         <Suspense
           fallback={
             <div className="escape-room-game__loading" role="status">
-              Bygger rømningsrommet …
+              Åpner døren …
             </div>
           }
         >
           <EscapeRoomWorld
-            activePuzzleOpen={gameState.activePuzzleId !== null}
+            activePuzzleOpen={
+              gameState.activePuzzleId !== null ||
+              gameState.stage === "complete"
+            }
             chestOpen={gameState.chestOpen}
             installedItemIds={gameState.installedItems}
             inventoryItemIds={gameState.inventory}
@@ -89,6 +99,9 @@ const EscapeRoomGame = ({ onComplete, userName }: EscapeRoomGameProps) => {
             }}
             onPickUpItem={(itemId) => {
               dispatch({ type: "PICK_UP_ITEM", itemId });
+            }}
+            onRedeemCameraReward={(itemId) => {
+              dispatch({ type: "REDEEM_CAMERA_REWARD", itemId });
             }}
             onReset={() => {
               dispatch({ type: "RESET_GAME" });

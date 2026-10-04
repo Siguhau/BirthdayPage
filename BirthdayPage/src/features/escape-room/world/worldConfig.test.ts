@@ -4,12 +4,17 @@ import {
   getAreaAtPosition,
   basementLadderClimbBounds,
   basementLadderPosition,
+  laserBeamPoints,
+  mirrorSocketInteractions,
+  mirrorStandHeight,
+  mirrorStandRadius,
   photoCameraPosition,
   photoWallX,
   trapdoorPosition,
   worldAreas,
   worldCeilings,
   worldDoors,
+  worldFloors,
   worldGravity,
   worldInteractions,
   worldLights,
@@ -17,6 +22,45 @@ import {
 } from "./worldConfig";
 
 describe("worldConfig", () => {
+  it("supports every mirror stand with a solid floor beneath its entire base", () => {
+    for (const {
+      position: [x, y, z],
+    } of mirrorSocketInteractions) {
+      const supported = worldFloors.some(
+        ({ position, size }) =>
+          Math.abs(y - mirrorStandHeight - (position[1] + size[1] / 2)) <
+            0.001 &&
+          x - mirrorStandRadius >= position[0] - size[0] / 2 &&
+          x + mirrorStandRadius <= position[0] + size[0] / 2 &&
+          z - mirrorStandRadius >= position[2] - size[2] / 2 &&
+          z + mirrorStandRadius <= position[2] + size[2] / 2,
+      );
+      expect(supported).toBe(true);
+    }
+  });
+
+  it("routes the descending laser through the hatch throughout the floor slab", () => {
+    const start = laserBeamPoints[2];
+    const end = laserBeamPoints[3];
+    for (const y of [0, -0.5]) {
+      const fraction = (y - start[1]) / (end[1] - start[1]);
+      const x = start[0] + fraction * (end[0] - start[0]);
+      const z = start[2] + fraction * (end[2] - start[2]);
+      expect(Math.abs(x)).toBeLessThan(1.3 - 0.026);
+      expect(z).toBeGreaterThan(-10.5 + 0.026);
+      expect(z).toBeLessThan(-7.5 - 0.026);
+    }
+  });
+
+  it("places Brita's sliding puzzle on an accessible archive wall", () => {
+    expect(worldInteractions).toContainEqual(
+      expect.objectContaining({
+        action: { type: "open-puzzle", puzzleId: "brita-sliding-tiles" },
+        id: "archive-brita-sliding-tiles",
+        position: [-7, 1.7, -3.58],
+      }),
+    );
+  });
   it("uses unique area IDs", () => {
     const ids = worldAreas.map(({ id }) => id);
 
@@ -78,31 +122,20 @@ describe("worldConfig", () => {
     );
   });
 
-  it("places a collectible camera battery in the archive", () => {
+  it("registers the camera vending machine instead of world pickups", () => {
     expect(worldInteractions).toContainEqual(
       expect.objectContaining({
-        action: { type: "pick-up-item", itemId: "camera-battery" },
-        id: "archive-camera-battery",
+        action: { type: "open-camera-vending" },
+        id: "gallery-camera-vending",
       }),
     );
-  });
-
-  it("places the collectible camera in the workshop", () => {
-    expect(worldInteractions).toContainEqual(
-      expect.objectContaining({
-        action: { type: "pick-up-item", itemId: "camera" },
-        id: "workshop-camera",
-      }),
-    );
-  });
-
-  it("hides a collectible packed tripod in the archive cupboard", () => {
-    expect(worldInteractions).toContainEqual(
-      expect.objectContaining({
-        action: { type: "pick-up-item", itemId: "tripod" },
-        id: "archive-tripod-cupboard",
-      }),
-    );
+    expect(
+      worldInteractions.some(
+        ({ action }) =>
+          action.type === "pick-up-item" &&
+          ["camera", "camera-battery", "tripod"].includes(action.itemId),
+      ),
+    ).toBe(false);
   });
 
   it("provides a typed wall toggle for a later hidden-room puzzle", () => {

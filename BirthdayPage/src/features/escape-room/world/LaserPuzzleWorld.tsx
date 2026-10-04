@@ -6,15 +6,16 @@ import {
   type MirrorItemId,
   type MirrorOrientations,
 } from "../state/gameTypes";
-import { mirrorPickups, mirrorSocketInteractions } from "./worldConfig";
-
-const laserPoints = [
-  [3.42, 1.42, -4.4],
-  [0.8, 1.15, -5],
-  [-0.8, 1.15, -7.3],
-  [1.9, -2.35, -14.6],
-  [0, -2.25, -18.7],
-] as const;
+import {
+  laserBeamPoints,
+  mirrorPickups,
+  mirrorSocketInteractions,
+  mirrorStandHeight,
+  mirrorStandRadius,
+  pepsiChestPosition,
+  pepsiChestPanelPosition,
+  pepsiChestPanelSize,
+} from "./worldConfig";
 
 const OrientedBeamSegment = (props: {
   end: readonly [number, number, number];
@@ -45,22 +46,45 @@ const OrientedBeamSegment = (props: {
 
 const Mirror = ({
   itemId,
+  installed,
   orientation,
   position,
 }: {
   itemId: MirrorItemId;
+  installed: boolean;
   orientation: number;
   position: readonly [number, number, number];
 }) => (
-  <group position={position} rotation={[0, orientation * (Math.PI / 4), 0]}>
-    <mesh castShadow position={[0, -0.45, 0]}>
-      <cylinderGeometry args={[0.18, 0.24, 0.9, 12]} />
+  <group position={position}>
+    <mesh castShadow receiveShadow position={[0, -mirrorStandHeight + 0.08, 0]}>
+      <cylinderGeometry args={[0.28, mirrorStandRadius, 0.16, 24]} />
+      <meshStandardMaterial color="#173747" metalness={0.4} roughness={0.65} />
+    </mesh>
+    <mesh castShadow position={[0, -mirrorStandHeight / 2, 0]}>
+      <cylinderGeometry args={[0.065, 0.09, mirrorStandHeight - 0.16, 16]} />
       <meshStandardMaterial color="#244c61" metalness={0.55} roughness={0.4} />
     </mesh>
-    <mesh castShadow rotation={[0, itemId === "mirror-2" ? 0.2 : -0.2, 0]}>
-      <boxGeometry args={[0.9, itemId === "mirror-3" ? 1.1 : 0.78, 0.08]} />
-      <meshStandardMaterial color="#bceeff" metalness={0.9} roughness={0.08} />
+    <mesh castShadow position={[0, -0.08, 0]}>
+      <cylinderGeometry args={[0.12, 0.12, 0.12, 16]} />
+      <meshStandardMaterial color="#8b764d" metalness={0.65} roughness={0.35} />
     </mesh>
+    {installed && (
+      <mesh
+        castShadow
+        rotation={[
+          0,
+          orientation * (Math.PI / 4) + (itemId === "mirror-2" ? 0.2 : -0.2),
+          0,
+        ]}
+      >
+        <boxGeometry args={[0.9, itemId === "mirror-3" ? 1.1 : 0.78, 0.08]} />
+        <meshStandardMaterial
+          color="#bceeff"
+          metalness={0.9}
+          roughness={0.08}
+        />
+      </mesh>
+    )}
   </group>
 );
 
@@ -134,41 +158,26 @@ const LaserPuzzleWorld = ({
 
       {mirrorSocketInteractions.map((socket) => {
         const itemId = socket.action.itemId;
-        return installedItemIds.includes(itemId) ? (
+        return (
           <Mirror
             itemId={itemId}
+            installed={installedItemIds.includes(itemId)}
             key={itemId}
             orientation={mirrorOrientations[itemId]}
             position={socket.position}
           />
-        ) : (
-          <mesh
-            key={itemId}
-            position={[
-              socket.position[0],
-              socket.position[1] - 0.62,
-              socket.position[2],
-            ]}
-          >
-            <cylinderGeometry args={[0.28, 0.34, 0.22, 12]} />
-            <meshStandardMaterial
-              color="#173747"
-              metalness={0.4}
-              roughness={0.65}
-            />
-          </mesh>
         );
       })}
 
       {Array.from({ length: beamProgress }, (_, index) => (
         <OrientedBeamSegment
-          end={laserPoints[index + 1]}
+          end={laserBeamPoints[index + 1]}
           key={`beam-${String(index)}`}
-          start={laserPoints[index]}
+          start={laserBeamPoints[index]}
         />
       ))}
 
-      <group position={[0, -2.5, -19.2]}>
+      <group position={pepsiChestPosition}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[2.3, 1, 1.25]} />
           <meshStandardMaterial color="#52351f" roughness={0.72} />
@@ -182,8 +191,8 @@ const LaserPuzzleWorld = ({
             <meshStandardMaterial color="#704d2b" roughness={0.65} />
           </mesh>
         </group>
-        <mesh position={[0, 0.05, 0.65]}>
-          <boxGeometry args={[0.26, 0.34, 0.08]} />
+        <mesh position={pepsiChestPanelPosition}>
+          <boxGeometry args={pepsiChestPanelSize} />
           <meshStandardMaterial
             color={chestOpen ? "#8ff7ff" : "#cfaa52"}
             emissive={chestOpen ? "#48dfff" : "#000000"}

@@ -471,6 +471,14 @@ export const cameraBatteryPosition = [-8.5, 0.82, 3.25] as const;
 export const looseCameraPosition = [5.65, 0.85, -2.75] as const;
 export const tripodCupboardPosition = [-9.35, 0, -3.25] as const;
 
+export const cameraVendingPosition = [-2.65, 0, -5.7] as const;
+export const cameraVendingInteraction = {
+  action: { type: "open-camera-vending" },
+  id: "gallery-camera-vending",
+  label: "Bruk automaten",
+  position: [-2.65, 1.35, -5.22],
+} as const satisfies WorldInteraction;
+
 export const cameraInteraction = {
   action: { type: "pick-up-item", itemId: "camera" },
   id: "workshop-camera",
@@ -542,6 +550,13 @@ export const foodInteractions = roomFoods.map(({ id, label, position }) => ({
   position,
 })) satisfies readonly WorldInteraction[];
 
+export const slidingTilesInteraction = {
+  action: { type: "open-puzzle", puzzleId: "brita-sliding-tiles" },
+  id: "archive-brita-sliding-tiles",
+  label: "Sett sammen bildet av Brita",
+  position: [-7, 1.7, -3.58],
+} as const satisfies WorldInteraction;
+
 export const captchaInteraction = {
   action: { type: "open-puzzle", puzzleId: "vase-captcha" },
   id: "archive-captcha-terminal",
@@ -601,26 +616,45 @@ export const mirrorPickups = [
   },
 ] as const satisfies readonly WorldInteraction[];
 
+export const mirrorStandHeight = 1.15;
+export const mirrorStandRadius = 0.34;
+
 export const mirrorSocketInteractions = [
   {
     action: { itemId: "mirror-1", type: "place-or-rotate-mirror" },
     id: "gallery-mirror-socket",
     label: "Plasser speil 1 i sokkelen",
-    position: [0.8, 1.15, -5],
+    position: [0.8, mirrorStandHeight, -5],
   },
   {
     action: { itemId: "mirror-2", type: "place-or-rotate-mirror" },
     id: "trapdoor-mirror-socket",
     label: "Plasser speil 2 ved lemmen",
-    position: [-0.8, 1.15, -7.3],
+    position: [-2.2, mirrorStandHeight, -7.05],
   },
   {
     action: { itemId: "mirror-3", type: "place-or-rotate-mirror" },
     id: "basement-mirror-socket",
     label: "Plasser speil 3 i kjelleren",
-    position: [1.9, -2.35, -14.6],
+    position: [1.9, -3 + mirrorStandHeight, -13],
   },
 ] as const satisfies readonly WorldInteraction[];
+
+export const pepsiChestPosition = [0, -2.5, -19.2] as const;
+export const pepsiChestPanelPosition = [0, 0.05, 0.65] as const;
+export const pepsiChestPanelSize = [0.26, 0.34, 0.08] as const;
+
+export const laserBeamPoints = [
+  [3.42, 1.42, -4.4],
+  ...mirrorSocketInteractions.map(({ position }) => position),
+  [
+    pepsiChestPosition[0] + pepsiChestPanelPosition[0],
+    pepsiChestPosition[1] + pepsiChestPanelPosition[1],
+    pepsiChestPosition[2] +
+      pepsiChestPanelPosition[2] +
+      pepsiChestPanelSize[2] / 2,
+  ],
+] as const;
 
 export const pepsiInteraction = {
   action: { type: "collect-pepsi" },
@@ -633,13 +667,13 @@ export const worldInteractions = [
   {
     action: { type: "open-door", doorId: "archive-door" },
     id: "open-archive-door",
-    label: "Åpne døren til Memory Archive",
+    label: "Åpne døren",
     position: [-3.75, 1.2, 0],
   },
   {
     action: { type: "open-door", doorId: "workshop-door" },
     id: "open-workshop-door",
-    label: "Åpne døren til Oddities Workshop",
+    label: "Åpne døren",
     position: [3.75, 1.2, 0],
   },
   {
@@ -649,9 +683,8 @@ export const worldInteractions = [
     position: [0, 0.35, -7.25],
   },
   captchaInteraction,
-  batteryInteraction,
-  tripodInteraction,
-  cameraInteraction,
+  slidingTilesInteraction,
+  cameraVendingInteraction,
   danceInteraction,
   cornChaseInteraction,
   cornArcadeSocketInteraction,

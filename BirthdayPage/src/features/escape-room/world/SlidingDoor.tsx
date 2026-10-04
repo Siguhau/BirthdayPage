@@ -5,6 +5,7 @@ import {
   type RapierRigidBody,
 } from "@react-three/rapier";
 import { useRef } from "react";
+import { interactionOccluderKey } from "./interactionOcclusion";
 import type { WorldDoor } from "./worldTypes";
 
 const doorSpeed = 2.5;
@@ -51,7 +52,11 @@ const SlidingDoor = ({
       <CuboidCollider
         args={widthAxis === "x" ? [1.4, 1.2, 0.16] : [0.16, 1.2, 1.4]}
       />
-      <mesh castShadow receiveShadow>
+      <mesh
+        castShadow
+        receiveShadow
+        userData={open ? {} : { [interactionOccluderKey]: true }}
+      >
         <boxGeometry
           args={widthAxis === "x" ? [2.8, 2.4, 0.32] : [0.32, 2.4, 2.8]}
         />

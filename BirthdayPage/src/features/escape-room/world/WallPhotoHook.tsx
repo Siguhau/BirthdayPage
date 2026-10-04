@@ -1,18 +1,24 @@
-import { useLoader } from "@react-three/fiber";
-import { DoubleSide, TextureLoader } from "three";
+import { DoubleSide } from "three";
 import type { SuccessfulLongboiPhoto } from "../puzzles/longboiPhotos";
+import usePhotoTexture from "./usePhotoTexture";
 
 type WallPhotoHookProps = {
   photo: SuccessfulLongboiPhoto | null;
 };
 
 const HungPhotoImage = ({ src }: { src: string }) => {
-  const texture = useLoader(TextureLoader, src);
+  const texture = usePhotoTexture(src);
 
   return (
-    <mesh position={[0, 0, -0.024]}>
+    <mesh position={[0, 0, -0.032]}>
       <planeGeometry args={[0.47, 0.59]} />
-      <meshStandardMaterial map={texture} roughness={0.7} side={DoubleSide} />
+      <meshStandardMaterial
+        key={texture === null ? "backing" : "photo"}
+        color={texture === null ? "#ffb4ce" : "#ffffff"}
+        map={texture}
+        roughness={0.7}
+        side={DoubleSide}
+      />
     </mesh>
   );
 };

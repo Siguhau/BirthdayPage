@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import ThemeProvider from "./ThemeProvider";
 import type { ThemeName } from "./types";
 import { useTheme } from "./useTheme";
@@ -30,6 +30,9 @@ const renderTheme = (initialTheme?: ThemeName) =>
   );
 
 describe("ThemeProvider", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
   it("applies the birthday theme by default", () => {
     renderTheme();
 

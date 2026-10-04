@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gameReducer } from "./gameReducer";
-import { initialGameState } from "./gameTypes";
+import { initialGameState, puzzleIds } from "./gameTypes";
 
 describe("gameReducer", () => {
   it("moves from the introduction into the walking prototype", () => {
@@ -21,15 +21,15 @@ describe("gameReducer", () => {
     ).toBe(initialGameState);
   });
 
-  it("resets all progress", () => {
+  it("resets earned tokens and redeemed camera rewards", () => {
     expect(
       gameReducer(
         {
           ...initialGameState,
           activePuzzleId: null,
           installedItems: ["camera-battery"],
-          inventory: [],
-          solvedPuzzles: ["vase-captcha"],
+          inventory: ["camera"],
+          solvedPuzzles: ["vase-captcha", "just-dance-wasd"],
           stage: "complete",
         },
         { type: "RESET_GAME" },
@@ -50,32 +50,35 @@ describe("gameReducer", () => {
     ).toBe(exploringState);
   });
 
-  it("opens, closes, and solves the active puzzle without leaving exploration", () => {
-    const exploringState = gameReducer(initialGameState, {
-      type: "START_GAME",
-    });
-    const puzzleState = gameReducer(exploringState, {
-      type: "OPEN_PUZZLE",
-      puzzleId: "vase-captcha",
-    });
+  it.each(puzzleIds)(
+    "opens, closes, and solves %s without leaving exploration",
+    (puzzleId) => {
+      const exploringState = gameReducer(initialGameState, {
+        type: "START_GAME",
+      });
+      const puzzleState = gameReducer(exploringState, {
+        type: "OPEN_PUZZLE",
+        puzzleId,
+      });
 
-    expect(puzzleState.activePuzzleId).toBe("vase-captcha");
-    expect(
-      gameReducer(puzzleState, { type: "CLOSE_PUZZLE" }).activePuzzleId,
-    ).toBeNull();
-    expect(
-      gameReducer(puzzleState, {
-        type: "SOLVE_PUZZLE",
-        puzzleId: "vase-captcha",
-      }),
-    ).toEqual({
-      ...initialGameState,
-      installedItems: [],
-      inventory: [],
-      solvedPuzzles: ["vase-captcha"],
-      stage: "exploring",
-    });
-  });
+      expect(puzzleState.activePuzzleId).toBe(puzzleId);
+      expect(
+        gameReducer(puzzleState, { type: "CLOSE_PUZZLE" }).activePuzzleId,
+      ).toBeNull();
+      expect(
+        gameReducer(puzzleState, {
+          type: "SOLVE_PUZZLE",
+          puzzleId,
+        }),
+      ).toEqual({
+        ...initialGameState,
+        installedItems: [],
+        inventory: [],
+        solvedPuzzles: [puzzleId],
+        stage: "exploring",
+      });
+    },
+  );
 
   it("records a world-native puzzle solution during exploration", () => {
     const exploringState = gameReducer(initialGameState, {
@@ -96,95 +99,173 @@ describe("gameReducer", () => {
     });
   });
 
-  it("picks up and installs the camera before its battery", () => {
+  it("redeems exactly one earned token for a camera component", () => {
     const exploringState = gameReducer(initialGameState, {
       type: "START_GAME",
     });
-    const carryingCamera = gameReducer(exploringState, {
-      type: "PICK_UP_ITEM",
-      itemId: "camera",
+    const captchaOpen = gameReducer(exploringState, {
+      type: "OPEN_PUZZLE",
+      puzzleId: "vase-captcha",
     });
-    const carryingBoth = gameReducer(carryingCamera, {
-      type: "PICK_UP_ITEM",
-      itemId: "camera-battery",
-    });
-
-    expect(carryingBoth.inventory).toEqual(["camera", "camera-battery"]);
-
-    const mountedCamera = gameReducer(carryingBoth, {
-      type: "INSTALL_ITEM",
-      itemId: "camera",
-    });
-    expect(mountedCamera).toEqual({
-      ...initialGameState,
-      installedItems: ["camera"],
-      inventory: ["camera-battery"],
-      solvedPuzzles: [],
-      stage: "exploring",
+    const earnedToken = gameReducer(captchaOpen, {
+      type: "SOLVE_PUZZLE",
+      puzzleId: "vase-captcha",
     });
 
     expect(
-      gameReducer(mountedCamera, {
-        type: "INSTALL_ITEM",
-        itemId: "camera-battery",
+      gameReducer(earnedToken, {
+        type: "REDEEM_CAMERA_REWARD",
+        itemId: "camera",
       }),
     ).toEqual({
       ...initialGameState,
-      installedItems: ["camera", "camera-battery"],
-      inventory: [],
-      solvedPuzzles: [],
+      inventory: ["camera"],
+      solvedPuzzles: ["vase-captcha"],
       stage: "exploring",
     });
   });
 
-  it("moves the packed tripod from the cupboard into its studio position", () => {
+  it.each([
+    ["vase-captcha", "camera"],
+    ["just-dance-wasd", "tripod"],
+    ["brita-sliding-tiles", "camera-battery"],
+  ] as const)("earns one token from %s", (puzzleId, itemId) => {
     const exploringState = gameReducer(initialGameState, {
       type: "START_GAME",
     });
-    const carryingTripod = gameReducer(exploringState, {
-      type: "PICK_UP_ITEM",
-      itemId: "tripod",
+    const puzzleOpen = gameReducer(exploringState, {
+      type: "OPEN_PUZZLE",
+      puzzleId,
+    });
+    const earnedToken = gameReducer(puzzleOpen, {
+      type: "SOLVE_PUZZLE",
+      puzzleId,
     });
 
-    expect(carryingTripod.inventory).toEqual(["tripod"]);
     expect(
-      gameReducer(carryingTripod, {
-        type: "INSTALL_ITEM",
+      gameReducer(earnedToken, {
+        type: "REDEEM_CAMERA_REWARD",
+        itemId,
+      }).inventory,
+    ).toEqual([itemId]);
+  });
+
+  it("does not redeem a camera component without an earned token", () => {
+    const exploringState = gameReducer(initialGameState, {
+      type: "START_GAME",
+    });
+
+    expect(
+      gameReducer(exploringState, {
+        type: "REDEEM_CAMERA_REWARD",
+        itemId: "camera",
+      }),
+    ).toBe(exploringState);
+  });
+
+  it("does not allow replay farming or duplicate camera component claims", () => {
+    const exploringState = gameReducer(initialGameState, {
+      type: "START_GAME",
+    });
+    const captchaOpen = gameReducer(exploringState, {
+      type: "OPEN_PUZZLE",
+      puzzleId: "vase-captcha",
+    });
+    const solvedCaptcha = gameReducer(captchaOpen, {
+      type: "SOLVE_PUZZLE",
+      puzzleId: "vase-captcha",
+    });
+    const cameraClaimed = gameReducer(solvedCaptcha, {
+      type: "REDEEM_CAMERA_REWARD",
+      itemId: "camera",
+    });
+
+    expect(
+      gameReducer(solvedCaptcha, {
+        type: "OPEN_PUZZLE",
+        puzzleId: "vase-captcha",
+      }),
+    ).toBe(solvedCaptcha);
+    expect(
+      gameReducer(cameraClaimed, {
+        type: "REDEEM_CAMERA_REWARD",
         itemId: "tripod",
       }),
+    ).toBe(cameraClaimed);
+    expect(
+      gameReducer(cameraClaimed, {
+        type: "REDEEM_CAMERA_REWARD",
+        itemId: "camera",
+      }),
+    ).toBe(cameraClaimed);
+  });
+
+  it("keeps an installed camera component spent", () => {
+    const state = {
+      ...initialGameState,
+      installedItems: ["camera"],
+      solvedPuzzles: ["vase-captcha", "just-dance-wasd", "brita-sliding-tiles"],
+      stage: "exploring",
+    } as const;
+
+    expect(
+      gameReducer(
+        {
+          ...state,
+          installedItems: [...state.installedItems],
+          solvedPuzzles: [...state.solvedPuzzles],
+        },
+        {
+          type: "REDEEM_CAMERA_REWARD",
+          itemId: "camera",
+        },
+      ),
+    ).toEqual(state);
+  });
+
+  it("allows a component to be mounted after vending redemption", () => {
+    const state = {
+      ...initialGameState,
+      inventory: ["tripod"],
+      solvedPuzzles: ["vase-captcha"],
+      stage: "exploring",
+    } as const;
+
+    expect(
+      gameReducer(
+        {
+          ...state,
+          inventory: [...state.inventory],
+          solvedPuzzles: [...state.solvedPuzzles],
+        },
+        { type: "INSTALL_ITEM", itemId: "tripod" },
+      ),
     ).toEqual({
       ...initialGameState,
       installedItems: ["tripod"],
       inventory: [],
-      solvedPuzzles: [],
+      solvedPuzzles: ["vase-captcha"],
       stage: "exploring",
     });
   });
 
-  it("stores both successful Longboi photos as separate inventory items", () => {
+  it("stores a successful Longboi photo in inventory", () => {
     const exploringState = gameReducer(initialGameState, {
       type: "START_GAME",
     });
-    const firstPhoto = gameReducer(exploringState, {
+    const photo = gameReducer(exploringState, {
       type: "PICK_UP_ITEM",
       itemId: "longboi-photo-1",
     });
-    const bothPhotos = gameReducer(firstPhoto, {
-      type: "PICK_UP_ITEM",
-      itemId: "longboi-photo-2",
-    });
 
-    expect(bothPhotos.inventory).toEqual([
-      "longboi-photo-1",
-      "longboi-photo-2",
-    ]);
+    expect(photo.inventory).toEqual(["longboi-photo-1"]);
   });
 
-  it("hangs one Longboi photo while keeping the other in inventory", () => {
+  it("hangs the successful Longboi photo", () => {
     const state = {
       ...initialGameState,
       installedItems: [],
-      inventory: ["longboi-photo-1", "longboi-photo-2"],
+      inventory: ["longboi-photo-1"],
       solvedPuzzles: ["photo-timer"],
       stage: "exploring",
     } as const;
@@ -202,7 +283,7 @@ describe("gameReducer", () => {
     ).toEqual({
       ...initialGameState,
       installedItems: ["longboi-photo-1"],
-      inventory: ["longboi-photo-2"],
+      inventory: [],
       solvedPuzzles: ["photo-timer"],
       stage: "exploring",
     });

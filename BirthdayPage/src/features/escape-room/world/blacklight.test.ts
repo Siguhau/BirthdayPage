@@ -9,7 +9,7 @@ describe("isSpawnBlacklightActive", () => {
     expect(isSpawnBlacklightActive(new Set(), ["longboi-photo-1"])).toBe(false);
     expect(
       isSpawnBlacklightActive(new Set(["hidden-photo-switch"]), [
-        "longboi-photo-2",
+        "longboi-photo-1",
       ]),
     ).toBe(true);
   });

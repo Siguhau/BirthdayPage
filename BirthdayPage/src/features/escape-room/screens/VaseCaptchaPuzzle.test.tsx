@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { VaseCaptchaTile } from "../puzzles/vaseCaptchaConfig";
+import {
+  correctVaseTileIds,
+  vaseCaptchaTiles,
+  type VaseCaptchaTile,
+} from "../puzzles/vaseCaptchaConfig";
 import VaseCaptchaPuzzle from "./VaseCaptchaPuzzle";
 
 const configuredTiles: readonly VaseCaptchaTile[] = Array.from(
@@ -14,6 +18,65 @@ const configuredTiles: readonly VaseCaptchaTile[] = Array.from(
 );
 
 describe("VaseCaptchaPuzzle", () => {
+  it("solves with the original seven correct images", () => {
+    const onSolve = vi.fn();
+    render(<VaseCaptchaPuzzle onSolve={onSolve} />);
+
+    expect(screen.getByRole("button", { name: "Bekreft" })).toBeEnabled();
+    expect(document.querySelectorAll(".vase-captcha__image")).toHaveLength(16);
+
+    expect(correctVaseTileIds).toEqual([
+      "tile-02",
+      "tile-04",
+      "tile-06",
+      "tile-09",
+      "tile-11",
+      "tile-14",
+      "tile-16",
+    ]);
+    for (const tile of vaseCaptchaTiles.filter(({ id }) =>
+      correctVaseTileIds.includes(id),
+    )) {
+      fireEvent.click(
+        screen.getByRole("button", { name: `${tile.alt}. Ikke valgt` }),
+      );
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Bekreft" }));
+    expect(onSolve).toHaveBeenCalledOnce();
+  });
+
+  it("rejects each new photo even when all original correct images are selected", () => {
+    const onSolve = vi.fn();
+    render(<VaseCaptchaPuzzle onSolve={onSolve} />);
+    const newPhotos = vaseCaptchaTiles.filter(({ imageSrc }) =>
+      imageSrc?.startsWith("/images/puzzles/vases/"),
+    );
+    expect(newPhotos).toHaveLength(9);
+    for (const tile of vaseCaptchaTiles.filter(({ id }) =>
+      correctVaseTileIds.includes(id),
+    )) {
+      fireEvent.click(
+        screen.getByRole("button", { name: `${tile.alt}. Ikke valgt` }),
+      );
+    }
+    for (const tile of newPhotos) {
+      fireEvent.click(
+        screen.getByRole("button", { name: `${tile.alt}. Ikke valgt` }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Bekreft" }));
+      expect(onSolve).not.toHaveBeenCalled();
+      expect(
+        screen.getByText("Ikke helt. Se nøye og prøv igjen."),
+      ).toBeVisible();
+      fireEvent.click(
+        screen.getByRole("button", { name: `${tile.alt}. Valgt` }),
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Bekreft" }));
+    expect(onSolve).toHaveBeenCalledOnce();
+  });
+
   it("solves after selecting every vase and no incorrect tiles", () => {
     const onSolve = vi.fn();
     render(
@@ -56,8 +119,16 @@ describe("VaseCaptchaPuzzle", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps verification disabled until all images and answers are configured", () => {
-    render(<VaseCaptchaPuzzle onSolve={vi.fn()} />);
+  it("keeps verification disabled when an image is missing", () => {
+    render(
+      <VaseCaptchaPuzzle
+        correctTileIds={["tile-02"]}
+        onSolve={vi.fn()}
+        tiles={configuredTiles.map((tile, index) =>
+          index === 0 ? { ...tile, imageSrc: undefined } : tile,
+        )}
+      />,
+    );
 
     expect(screen.getByRole("button", { name: "Bekreft" })).toBeDisabled();
     expect(

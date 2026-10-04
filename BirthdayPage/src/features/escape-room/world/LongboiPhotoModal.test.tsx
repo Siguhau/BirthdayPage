@@ -4,25 +4,47 @@ import { successfulLongboiPhotos } from "../puzzles/longboiPhotos";
 import LongboiPhotoModal from "./LongboiPhotoModal";
 
 describe("LongboiPhotoModal", () => {
-  it("shows the successful placeholder and collected reward", () => {
+  it("shows the first successful photo as the puzzle reward", () => {
     render(
       <LongboiPhotoModal
         onClose={vi.fn()}
         result={{
-          collectedCount: 1,
-          details: "Ta ett til.",
+          details: "Bildet er lagt i inventaret.",
           photo: successfulLongboiPhotos[0],
+          savedToInventory: true,
         }}
       />,
     );
 
     expect(
-      screen.getByRole("dialog", { name: "1 av 2 samlet" }),
+      screen.getByRole("dialog", { name: "Et Longboi-bilde" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Vellykket Longboi 1")).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: successfulLongboiPhotos[0].alt }),
+    ).toHaveAttribute("src", successfulLongboiPhotos[0].src);
     expect(
       screen.getByText("Longboi-bildet er lagt i inventaret."),
     ).toBeInTheDocument();
+  });
+
+  it("shows later successful photos without adding another inventory reward", () => {
+    render(
+      <LongboiPhotoModal
+        onClose={vi.fn()}
+        result={{
+          details: "Ta gjerne flere bilder for å se flere Longboi-øyeblikk.",
+          photo: successfulLongboiPhotos[1],
+          savedToInventory: false,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Et nytt Longboi-bilde" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Longboi-bildet er lagt i inventaret."),
+    ).not.toBeInTheDocument();
   });
 
   it("closes with Escape", () => {
@@ -31,9 +53,9 @@ describe("LongboiPhotoModal", () => {
       <LongboiPhotoModal
         onClose={onClose}
         result={{
-          collectedCount: 1,
-          details: "Ta ett til.",
+          details: "Bildet er lagt i inventaret.",
           photo: successfulLongboiPhotos[0],
+          savedToInventory: true,
         }}
       />,
     );

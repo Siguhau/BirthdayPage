@@ -1,6 +1,10 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
-import { Vector3 } from "three";
+import { Raycaster, Vector3 } from "three";
+import {
+  getInteractionTargetSignature,
+  isInteractionOccluded,
+} from "./interactionOcclusion";
 import type { WorldInteraction } from "./worldTypes";
 
 const interactionRange = 2.7;
@@ -17,11 +21,12 @@ const InteractionSystem = ({
   interactions,
   onTargetChange,
 }: InteractionSystemProps) => {
-  const targetedIdRef = useRef<string | null>(null);
+  const targetedSignatureRef = useRef<string | null>(null);
   const targetPosition = useRef(new Vector3());
   const directionToTarget = useRef(new Vector3());
   const lookDirection = useRef(new Vector3());
-  const { camera } = useThree();
+  const raycaster = useRef(new Raycaster());
+  const { camera, scene } = useThree();
 
   useFrame(() => {
     camera.getWorldDirection(lookDirection.current);
@@ -41,7 +46,13 @@ const InteractionSystem = ({
           distance <= interactionRange &&
           distance < closestDistance &&
           directionToTarget.current.dot(lookDirection.current) >=
-            minimumLookAlignment
+            minimumLookAlignment &&
+          !isInteractionOccluded(
+            raycaster.current,
+            scene,
+            camera.position,
+            targetPosition.current,
+          )
         ) {
           closestDistance = distance;
           closestTarget = interaction;
@@ -49,8 +60,9 @@ const InteractionSystem = ({
       }
     }
 
-    if (closestTarget?.id !== targetedIdRef.current) {
-      targetedIdRef.current = closestTarget?.id ?? null;
+    const nextSignature = getInteractionTargetSignature(closestTarget);
+    if (nextSignature !== targetedSignatureRef.current) {
+      targetedSignatureRef.current = nextSignature;
       onTargetChange(closestTarget);
     }
   });

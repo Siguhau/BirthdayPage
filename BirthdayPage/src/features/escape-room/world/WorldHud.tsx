@@ -1,17 +1,11 @@
-import type { WorldArea, WorldInteraction } from "./worldTypes";
+import type { WorldInteraction } from "./worldTypes";
 
 type WorldHudProps = {
-  area: WorldArea;
   target: WorldInteraction | null;
 };
 
-const WorldHud = ({ area, target }: WorldHudProps) => (
+const WorldHud = ({ target }: WorldHudProps) => (
   <div className="escape-room-world__hud">
-    <div className="escape-room-world__area">
-      <span>Område</span>
-      <strong>{area.label}</strong>
-    </div>
-
     <div
       aria-hidden="true"
       className={`escape-room-world__reticle ${

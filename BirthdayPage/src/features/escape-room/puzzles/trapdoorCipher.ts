@@ -1,6 +1,7 @@
 export const trapdoorCipherPlaintext = "junar";
-export const trapdoorCipherShift = 1;
-export const trapdoorCode = "kvobs";
+/** The blacklight clue in the reading corner reveals this birthday number. */
+export const trapdoorCipherShift = 30;
+export const trapdoorCipherBlacklightLabel = `K = ${String(trapdoorCipherShift)}`;
 
 export const applyCaesarShift = (value: string, shift: number) =>
   Array.from(value.toLowerCase())
@@ -10,3 +11,8 @@ export const applyCaesarShift = (value: string, shift: number) =>
       return String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
     })
     .join("");
+
+export const trapdoorCode = applyCaesarShift(
+  trapdoorCipherPlaintext,
+  trapdoorCipherShift,
+);

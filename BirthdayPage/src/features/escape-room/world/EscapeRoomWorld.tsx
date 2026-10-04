@@ -10,13 +10,13 @@ import {
   type CSSProperties,
 } from "react";
 import { clearGameProgress } from "../persistence/gameProgress";
-import { getPhotoFailureHint } from "../puzzles/photoFailureHint";
 import {
+  createLongboiPhotoDeck,
+  drawLongboiPhoto,
   failedLongboiPhotos,
-  getRepeatingPhoto,
   longboiPhotoItemIds,
-  shuffleLongboiPhotos,
   successfulLongboiPhotos,
+  type SuccessfulLongboiPhoto,
 } from "../puzzles/longboiPhotos";
 import type {
   ItemId,
@@ -25,7 +25,13 @@ import type {
   PuzzleId,
 } from "../state/gameTypes";
 import Building from "./Building";
-import CameraBattery from "./CameraBattery";
+import CameraVendingMachine from "./CameraVendingMachine";
+import CameraVendingModal from "./CameraVendingModal";
+import {
+  getCameraTokenBalance,
+  tokenPuzzles,
+  type CameraRewardId,
+} from "../puzzles/cameraRewards";
 import { isSpawnBlacklightActive } from "./blacklight";
 import BasementTrapdoor from "./BasementTrapdoor";
 import BasementLadder from "./BasementLadder";
@@ -41,7 +47,6 @@ import LaserPuzzleWorld from "./LaserPuzzleWorld";
 import LongboiPhotoModal, {
   type LongboiPhotoResult,
 } from "./LongboiPhotoModal";
-import LoosePhotoCamera from "./LoosePhotoCamera";
 import MouseLookController from "./MouseLookController";
 import PhotoChallenge from "./PhotoChallenge";
 import PhotoCameraStand from "./PhotoCameraStand";
@@ -49,7 +54,7 @@ import PhotoStudioDecor from "./PhotoStudioDecor";
 import PlayerController from "./PlayerController";
 import ReadingCorner from "./ReadingCorner";
 import SlidingDoor from "./SlidingDoor";
-import TripodCupboard from "./TripodCupboard";
+import SlidingTilesStation from "./SlidingTilesStation";
 import TrapdoorCipherClue from "./TrapdoorCipherClue";
 import TrapdoorCodeModal from "./TrapdoorCodeModal";
 import WorkshopDisco from "./WorkshopDisco";
@@ -78,37 +83,6 @@ import "./EscapeRoomWorld.css";
 
 const toastDurationMs = 4_000;
 
-const getPhotoInteractionLabel = ({
-  batteryInstalled,
-  cameraMounted,
-  hasBattery,
-  hasCamera,
-  hasTripod,
-  longboiPhotoCount,
-  tripodPlaced,
-}: {
-  batteryInstalled: boolean;
-  cameraMounted: boolean;
-  hasBattery: boolean;
-  hasCamera: boolean;
-  hasTripod: boolean;
-  longboiPhotoCount: number;
-  tripodPlaced: boolean;
-}) => {
-  if (!tripodPlaced) {
-    return hasTripod
-      ? "Plasser stativet på fotomerket"
-      : "Her skal et kamerastativ stå";
-  }
-  if (!cameraMounted) {
-    return hasCamera ? "Monter kameraet på stativet" : "Undersøk stativet";
-  }
-  if (!batteryInstalled) {
-    return hasBattery ? "Sett batteriet i kameraet" : "Undersøk kameraet";
-  }
-  return `Ta Longboi-bilde (${String(longboiPhotoCount)}/2)`;
-};
-
 type EscapeRoomWorldProps = {
   activePuzzleOpen: boolean;
   chestOpen: boolean;
@@ -122,6 +96,7 @@ type EscapeRoomWorldProps = {
   onOpenPuzzle: (puzzleId: PuzzleId) => void;
   onPickUpItem: (itemId: ItemId) => void;
   onReset: () => void;
+  onRedeemCameraReward: (itemId: CameraRewardId) => void;
   onRotateMirror: (itemId: MirrorItemId) => void;
   onSolvePuzzle: (puzzleId: PuzzleId) => void;
   solvedPuzzleIds: readonly PuzzleId[];
@@ -140,12 +115,14 @@ const EscapeRoomWorld = ({
   onOpenPuzzle,
   onPickUpItem,
   onReset,
+  onRedeemCameraReward,
   onRotateMirror,
   onSolvePuzzle,
   solvedPuzzleIds,
 }: EscapeRoomWorldProps) => {
   const [areaId, setAreaId] = useState<AreaId>(defaultAreaId);
   const [isPaused, setIsPaused] = useState(false);
+  const [isCameraVendingOpen, setIsCameraVendingOpen] = useState(false);
   const [isCipherPlaqueOpen, setIsCipherPlaqueOpen] = useState(false);
   const [isLaserPanelOpen, setIsLaserPanelOpen] = useState(false);
   const [isTrapdoorCodeOpen, setIsTrapdoorCodeOpen] = useState(false);
@@ -166,19 +143,24 @@ const EscapeRoomWorld = ({
   const [photoResult, setPhotoResult] = useState<LongboiPhotoResult | null>(
     null,
   );
-  const [successfulPhotoDeck] = useState(() =>
-    shuffleLongboiPhotos(successfulLongboiPhotos),
+  const [collectedLongboiPhotos, setCollectedLongboiPhotos] = useState<
+    Partial<
+      Record<(typeof longboiPhotoItemIds)[number], SuccessfulLongboiPhoto>
+    >
+  >({});
+  const successfulPhotoDeck = useRef(
+    createLongboiPhotoDeck<(typeof successfulLongboiPhotos)[number]>(),
   );
-  const [failedPhotoDeck] = useState(() =>
-    shuffleLongboiPhotos(failedLongboiPhotos),
+  const failedPhotoDeck = useRef(
+    createLongboiPhotoDeck<(typeof failedLongboiPhotos)[number]>(),
   );
-  const failedPhotoAttempt = useRef(0);
   const wasPointerLocked = useRef(document.pointerLockElement !== null);
   const suppressMenuOnUnlock = useRef(false);
   const interactionKeyGate = useRef(createInteractionKeyGate());
   const area = getArea(areaId);
   const worldPaused =
     isPaused ||
+    isCameraVendingOpen ||
     isCipherPlaqueOpen ||
     isLaserPanelOpen ||
     isTrapdoorCodeOpen ||
@@ -187,31 +169,48 @@ const EscapeRoomWorld = ({
   const hasCamera = inventoryItemIds.includes("camera");
   const hasCameraBattery = inventoryItemIds.includes("camera-battery");
   const hasTripod = inventoryItemIds.includes("tripod");
+  const hasLongboiPhoto = longboiPhotoItemIds.some((itemId) =>
+    inventoryItemIds.includes(itemId),
+  );
   const cameraMounted = installedItemIds.includes("camera");
   const cameraBatteryInstalled = installedItemIds.includes("camera-battery");
   const tripodPlaced = installedItemIds.includes("tripod");
+  const hungPhotoItemId = longboiPhotoItemIds.find((itemId) =>
+    installedItemIds.includes(itemId),
+  );
   const hungLongboiPhoto =
-    successfulLongboiPhotos.find(({ itemId }) =>
-      installedItemIds.includes(itemId),
-    ) ?? null;
+    hungPhotoItemId === undefined
+      ? null
+      : (collectedLongboiPhotos[hungPhotoItemId] ?? successfulLongboiPhotos[0]);
   const blacklightActive = isSpawnBlacklightActive(
     activeWallSwitchIds,
     installedItemIds,
   );
-  const longboiPhotoCount = longboiPhotoItemIds.filter(
-    (itemId) =>
-      inventoryItemIds.includes(itemId) || installedItemIds.includes(itemId),
-  ).length;
   const mirrorInventoryCount = (
     ["mirror-1", "mirror-2", "mirror-3"] as const
   ).filter((itemId) => inventoryItemIds.includes(itemId)).length;
+  const tokenBalance = getCameraTokenBalance({
+    solvedPuzzles: [...solvedPuzzleIds],
+    inventory: [...inventoryItemIds],
+    installedItems: [...installedItemIds],
+  });
+  const previousTokenCount = useRef(0);
+  const earnedTokenCount = tokenPuzzles.filter(({ puzzleId }) =>
+    solvedPuzzleIds.includes(puzzleId),
+  ).length;
+  useEffect(() => {
+    if (earnedTokenCount > previousTokenCount.current) {
+      setInteractionMessage("Du har vunnet en pollett!");
+    }
+    previousTokenCount.current = earnedTokenCount;
+  }, [earnedTokenCount]);
   const inventoryLabels = [
+    `Polletter: ${String(tokenBalance)}`,
+
     hasCamera ? "Kamera" : null,
     hasCameraBattery ? "Kamerabatteri" : null,
     hasTripod ? "Kamerastativ" : null,
-    longboiPhotoCount > 0
-      ? `Longboi-bilder ${String(longboiPhotoCount)}/2`
-      : null,
+    hasLongboiPhoto ? "Longboi-bilde" : null,
     mirrorInventoryCount > 0 ? `Speil ${String(mirrorInventoryCount)}` : null,
     solvedPuzzleIds.includes("corn-chase") ? "Arkade: 1 · 99 · 6" : null,
   ].filter((label): label is string => label !== null);
@@ -253,7 +252,10 @@ const EscapeRoomWorld = ({
           return [];
         }
         if (action.type === "collect-pepsi" && !chestOpen) return [];
-        if ("puzzleId" in action && solvedPuzzleIds.includes(action.puzzleId)) {
+        if (
+          action.type === "open-puzzle" &&
+          solvedPuzzleIds.includes(action.puzzleId)
+        ) {
           return [];
         }
 
@@ -272,11 +274,7 @@ const EscapeRoomWorld = ({
           return [
             {
               ...interaction,
-              label: longboiPhotoItemIds.some((itemId) =>
-                inventoryItemIds.includes(itemId),
-              )
-                ? "Heng et Longboi-bilde på kroken"
-                : "Undersøk den tomme bildekroken",
+              label: "Undersøk bildekroken",
             },
           ];
         }
@@ -294,15 +292,10 @@ const EscapeRoomWorld = ({
 
         if (action.type === "place-or-rotate-mirror") {
           const installed = installedItemIds.includes(action.itemId);
-          const carried = inventoryItemIds.includes(action.itemId);
           return [
             {
               ...interaction,
-              label: installed
-                ? `Drei speil ${action.itemId.slice(-1)}`
-                : carried
-                  ? `Plasser speil ${action.itemId.slice(-1)} i sokkelen`
-                  : `Undersøk tom speilsokkel ${action.itemId.slice(-1)}`,
+              label: installed ? "Drei speilet" : "Undersøk sokkelen",
             },
           ];
         }
@@ -314,15 +307,13 @@ const EscapeRoomWorld = ({
         return [
           {
             ...interaction,
-            label: getPhotoInteractionLabel({
-              batteryInstalled: cameraBatteryInstalled,
-              cameraMounted,
-              hasBattery: hasCameraBattery,
-              hasCamera,
-              hasTripod,
-              longboiPhotoCount,
-              tripodPlaced,
-            }),
+            label: !tripodPlaced
+              ? "Undersøk merket på gulvet"
+              : !cameraMounted
+                ? "Undersøk stativet"
+                : !cameraBatteryInstalled
+                  ? "Undersøk kameraet"
+                  : "Ta et bilde",
             position: tripodPlaced
               ? interaction.position
               : ([
@@ -340,14 +331,10 @@ const EscapeRoomWorld = ({
       eatenFoodIds,
       cameraMounted,
       chestOpen,
-      hasCamera,
-      hasCameraBattery,
-      hasTripod,
       hungLongboiPhoto,
       installedItemIds,
       inventoryItemIds,
       laserPowered,
-      longboiPhotoCount,
       openDoorIds,
       photoCountdown,
       solvedPuzzleIds,
@@ -438,56 +425,52 @@ const EscapeRoomWorld = ({
       releaseMouseLook();
 
       if (result.success) {
-        const nextPhoto = successfulPhotoDeck.find(
-          ({ itemId }) =>
+        const draw = drawLongboiPhoto(
+          successfulLongboiPhotos,
+          successfulPhotoDeck.current,
+        );
+        successfulPhotoDeck.current = draw.deck;
+        const nextPhoto = draw.photo;
+        const rewardItemId = longboiPhotoItemIds.find(
+          (itemId) =>
             !inventoryItemIds.includes(itemId) &&
             !installedItemIds.includes(itemId),
         );
-
-        if (nextPhoto === undefined) {
-          onSolvePuzzle("photo-timer");
-          return;
+        if (rewardItemId !== undefined) {
+          setCollectedLongboiPhotos((current) => ({
+            ...current,
+            [rewardItemId]: nextPhoto,
+          }));
+          onPickUpItem(rewardItemId);
         }
-
-        const nextCollectedCount = longboiPhotoCount + 1;
-        onPickUpItem(nextPhoto.itemId);
         setPhotoResult({
-          collectedCount: nextCollectedCount,
           details:
-            nextCollectedCount === 2
-              ? "To godkjente Longbois! Begge kan brukes senere i spillet."
-              : "Godkjent! Ta ett vellykket Longboi-bilde til.",
+            rewardItemId === undefined
+              ? "Godkjent! Ta gjerne flere bilder for å se flere Longboi-øyeblikk."
+              : "Godkjent! Bildet er lagt i inventaret.",
           photo: nextPhoto,
+          savedToInventory: rewardItemId !== undefined,
         });
 
-        if (nextCollectedCount === 2) {
+        if (rewardItemId !== undefined) {
           onSolvePuzzle("photo-timer");
         }
         return;
       }
 
-      const failedPhoto = getRepeatingPhoto(
-        failedPhotoDeck,
-        failedPhotoAttempt.current,
+      const draw = drawLongboiPhoto(
+        failedLongboiPhotos,
+        failedPhotoDeck.current,
       );
-      failedPhotoAttempt.current += 1;
-      const failureCount = failedPhotoAttempt.current;
+      failedPhotoDeck.current = draw.deck;
 
       setPhotoResult({
-        collectedCount: longboiPhotoCount,
-        details: getPhotoFailureHint(result, failureCount),
-        photo: failedPhoto,
+        details: "Bildet ble ikke godkjent.",
+        photo: draw.photo,
+        savedToInventory: false,
       });
     },
-    [
-      failedPhotoDeck,
-      installedItemIds,
-      inventoryItemIds,
-      longboiPhotoCount,
-      onPickUpItem,
-      onSolvePuzzle,
-      successfulPhotoDeck,
-    ],
+    [installedItemIds, inventoryItemIds, onPickUpItem, onSolvePuzzle],
   );
 
   useEffect(() => {
@@ -518,6 +501,10 @@ const EscapeRoomWorld = ({
         target !== null &&
         !worldPaused
       ) {
+        if (photoCountdown !== null) {
+          setInteractionMessage("Vent til kameraet har tatt bildet.");
+          return;
+        }
         if (target.action.type === "open-door") {
           const { doorId } = target.action;
           setOpenDoorIds((currentDoorIds) =>
@@ -585,7 +572,7 @@ const EscapeRoomWorld = ({
             activating
               ? hungLongboiPhoto === null
                 ? "Veggbryteren klikker på. Ingenting skjer … ennå."
-                : "Veggbryteren klikker på. Lyset over inngangen blir til blacklight."
+                : "Veggbryteren klikker på."
               : "Veggbryteren klikker av.",
           );
         } else if (target.action.type === "hang-longboi-photo") {
@@ -594,21 +581,26 @@ const EscapeRoomWorld = ({
           );
 
           if (photoItemId === undefined) {
-            setInteractionMessage("Kroken trenger et vellykket Longboi-bilde.");
+            setInteractionMessage("En tom bildekrok.");
             return;
           }
 
           onInstallItem(photoItemId);
           setInteractionMessage(
             activeWallSwitchIds.has("hidden-photo-switch")
-              ? "Bildet trekker kroken ned. Lyset over inngangen blir til blacklight."
-              : "Bildet trekker kroken ned, men lyset mangler fortsatt strøm.",
+              ? "Bildet trekker kroken ned. Et svakt klikk høres."
+              : "Bildet trekker kroken ned.",
           );
         } else if (target.action.type === "inspect-cipher-plaque") {
           if (document.pointerLockElement !== null) {
             suppressMenuOnUnlock.current = true;
           }
           setIsCipherPlaqueOpen(true);
+          releaseMouseLook();
+        } else if (target.action.type === "open-camera-vending") {
+          if (document.pointerLockElement !== null)
+            suppressMenuOnUnlock.current = true;
+          setIsCameraVendingOpen(true);
           releaseMouseLook();
         } else if (target.action.type === "open-laser-panel") {
           if (document.pointerLockElement !== null) {
@@ -629,17 +621,13 @@ const EscapeRoomWorld = ({
             setInteractionMessage(
               chestOpen
                 ? "Strålen treffer låsen. Kisten åpner seg!"
-                : "Speilet dreies. Følg den røde strålen.",
+                : "Speilet dreies.",
             );
           } else if (inventoryItemIds.includes(itemId)) {
             onInstallItem(itemId);
-            setInteractionMessage(
-              `Speil ${itemId.slice(-1)} er festet. Drei det for å lede strålen videre.`,
-            );
+            setInteractionMessage("Speilet er festet.");
           } else {
-            setInteractionMessage(
-              `Denne sokkelen trenger speil ${itemId.slice(-1)}. Let i de andre rommene.`,
-            );
+            setInteractionMessage("En tom sokkel.");
           }
         } else if (target.action.type === "collect-pepsi") {
           if (!chestOpen) return;
@@ -649,13 +637,9 @@ const EscapeRoomWorld = ({
           if (!tripodPlaced) {
             if (hasTripod) {
               onInstallItem("tripod");
-              setInteractionMessage(
-                "Stativet er slått ut og plassert 1,5 meter fra fotoveggen.",
-              );
+              setInteractionMessage("Stativet er satt på plass.");
             } else {
-              setInteractionMessage(
-                "Fotomerket mangler et stativ. Sjekk skapet i Memory Archive.",
-              );
+              setInteractionMessage("Et merke på gulvet.");
             }
             return;
           }
@@ -664,9 +648,7 @@ const EscapeRoomWorld = ({
               onInstallItem("camera");
               setInteractionMessage("Kameraet er montert på stativet.");
             } else {
-              setInteractionMessage(
-                "Stativet mangler et kamera. Let i Oddities Workshop.",
-              );
+              setInteractionMessage("Et tomt stativ.");
             }
             return;
           }
@@ -677,13 +659,10 @@ const EscapeRoomWorld = ({
                 "Batteriet klikker på plass. Kameraet er klart.",
               );
             } else {
-              setInteractionMessage(
-                "Kameraet mangler et batteri. Let i Memory Archive.",
-              );
+              setInteractionMessage("Kameraet slår seg ikke på.");
             }
             return;
           }
-          if (photoCountdown !== null) return;
           setInteractionMessage(null);
           setPhotoAttemptId((currentAttempt) => currentAttempt + 1);
         }
@@ -757,8 +736,6 @@ const EscapeRoomWorld = ({
         <HiddenRoomWallToggle
           active={activeWallSwitchIds.has("hidden-photo-switch")}
         />
-        <CameraBattery collected={hasCameraBattery || cameraBatteryInstalled} />
-        <LoosePhotoCamera collected={hasCamera || cameraMounted} />
         {tripodPlaced && (
           <PhotoCameraStand
             batteryInstalled={cameraBatteryInstalled}
@@ -769,6 +746,7 @@ const EscapeRoomWorld = ({
           attemptId={photoAttemptId}
           onCountdownChange={setPhotoCountdown}
           onResult={handlePhotoResult}
+          paused={worldPaused}
         />
         <WorkshopDisco active={solvedPuzzleIds.includes("just-dance-wasd")} />
         <LaserPuzzleWorld
@@ -788,10 +766,13 @@ const EscapeRoomWorld = ({
             />
             <BasementLadder />
             <TrapdoorCipherClue />
-            <TripodCupboard collected={hasTripod || tripodPlaced} />
+            <CameraVendingMachine />
             <CipherBust />
             <ReadingCorner blacklightActive={blacklightActive} />
             <CaptchaStation solved={solvedPuzzleIds.includes("vase-captcha")} />
+            <SlidingTilesStation
+              solved={solvedPuzzleIds.includes("brita-sliding-tiles")}
+            />
             <DanceStation
               solved={solvedPuzzleIds.includes("just-dance-wasd")}
             />
@@ -822,7 +803,7 @@ const EscapeRoomWorld = ({
         </Suspense>
       </Canvas>
 
-      <WorldHud area={area} target={target} />
+      <WorldHud target={target} />
 
       <div className="escape-room-world__inventory">
         <span>Inventar</span>
@@ -857,6 +838,17 @@ const EscapeRoomWorld = ({
         <LongboiPhotoModal onClose={closePhotoResult} result={photoResult} />
       )}
 
+      {isCameraVendingOpen && (
+        <CameraVendingModal
+          tokenBalance={tokenBalance}
+          ownedItems={[...inventoryItemIds, ...installedItemIds]}
+          onRedeem={onRedeemCameraReward}
+          onClose={() => {
+            setIsCameraVendingOpen(false);
+            requestMouseLook();
+          }}
+        />
+      )}
       {isCipherPlaqueOpen && <CipherPlaqueModal onClose={closeCipherPlaque} />}
 
       {isLaserPanelOpen && (
@@ -888,7 +880,7 @@ const EscapeRoomWorld = ({
       )}
       {overfull && (
         <p aria-live="assertive" className="escape-room-world__cc">
-          CC: Jeg har spist for mye
+          Jeg har spist for mye
         </p>
       )}
 

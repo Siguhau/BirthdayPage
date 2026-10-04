@@ -48,6 +48,7 @@ export type WorldInteraction = {
     | { type: "hang-longboi-photo" }
     | { type: "inspect-cipher-plaque" }
     | { type: "open-laser-panel" }
+    | { type: "open-camera-vending" }
     | { type: "open-trapdoor-lock" }
     | { type: "place-or-rotate-mirror"; itemId: MirrorItemId }
     | { type: "collect-pepsi" }

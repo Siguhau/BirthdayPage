@@ -16,7 +16,8 @@
   text-align: center;
 }
 
-.escape-room-game[data-game-stage="exploring"] {
+.escape-room-game[data-game-stage="exploring"],
+.escape-room-game[data-game-stage="complete"] {
   position: absolute;
   width: 100%;
   min-height: 100%;
@@ -29,6 +30,91 @@
   inset: 0;
 }
 
+.escape-room-game[data-game-stage="complete"] {
+  overflow: hidden;
+  background: #05070d;
+}
+
+.escape-room-game[data-game-stage="complete"] > .escape-room-world {
+  pointer-events: none;
+  animation: escape-room-world-farewell 2.4s ease forwards;
+}
+
+.escape-room-complete {
+  position: absolute;
+  z-index: 50;
+  inset: 0;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(212 175 55 / 22%),
+    rgb(5 7 13 / 85%) 70%
+  );
+  animation: escape-room-completion-glow 2.4s ease both;
+}
+
+.escape-room-complete__message {
+  position: relative;
+  isolation: isolate;
+  animation: escape-room-completion-message 2.4s ease both;
+}
+
+.escape-room-complete__halo {
+  position: absolute;
+  z-index: -1;
+  width: min(65vw, 26rem);
+  aspect-ratio: 1;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgb(229 193 92 / 40%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 6rem rgb(212 175 55 / 22%),
+    inset 0 0 4rem rgb(212 175 55 / 12%);
+  transform: translate(-50%, -50%);
+}
+
+@keyframes escape-room-world-farewell {
+  from {
+    opacity: 1;
+  }
+  65%,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes escape-room-completion-glow {
+  from {
+    opacity: 0;
+  }
+  25%,
+  65% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes escape-room-completion-message {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  25%,
+  65% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.04);
+  }
+}
+
 .escape-room-introduction,
 .escape-room-puzzle,
 .escape-room-complete,
@@ -39,13 +125,76 @@
   flex-direction: column;
 }
 
+.escape-room-game[data-game-stage="introduction"] {
+  border-color: rgba(212, 175, 55, 0.16);
+  background:
+    radial-gradient(
+      ellipse at 50% 10%,
+      rgba(212, 175, 55, 0.07),
+      transparent 55%
+    ),
+    #080a0f;
+}
+
+.escape-room-introduction__door {
+  position: relative;
+  width: 4.5rem;
+  height: 7rem;
+  border: 1px solid #5e5033;
+  margin-bottom: 2rem;
+  background: #e5c17c;
+  box-shadow: 0 0 3rem rgba(229, 193, 124, 0.12);
+  perspective: 15rem;
+}
+
+.escape-room-introduction__door::before {
+  position: absolute;
+  border: 1px solid #423a2c;
+  background: linear-gradient(90deg, #0d1015, #1c1b19);
+  content: "";
+  inset: 0;
+  transform: rotateY(-24deg);
+  transform-origin: left;
+}
+
+.escape-room-introduction__door::after {
+  position: absolute;
+  top: 52%;
+  right: 24%;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: #a88a52;
+  content: "";
+}
+
+.escape-room-introduction__whisper {
+  margin: 1.25rem 0 0;
+  color: var(--theme-text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  line-height: 1.6;
+}
+
 .escape-room-introduction__controls {
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--theme-border-subtle);
-  border-radius: 0.75rem;
+  max-width: 28rem;
   margin: 1.5rem 0 0;
   color: var(--theme-text-muted);
   font-size: 0.82rem;
+  line-height: 1.8;
+}
+
+.escape-room-introduction__controls summary {
+  cursor: pointer;
+}
+
+.escape-room-introduction__controls summary:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 4px;
+}
+
+.escape-room-introduction__controls p {
+  margin: 0.75rem 0 0;
 }
 
 .escape-room-game__loading {
@@ -604,6 +753,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .escape-room-game[data-game-stage="complete"] > .escape-room-world,
+  .escape-room-complete,
+  .escape-room-complete__message {
+    animation: none;
+  }
   .escape-room-game {
     animation: none;
   }

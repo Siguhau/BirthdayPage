@@ -2,9 +2,9 @@ import type { EscapeRoomSupportReason } from "../support/escapeRoomSupport";
 
 const explanationByReason: Record<EscapeRoomSupportReason, string> = {
   mobile:
-    "Rømningsrommet trenger tastatur og mus. På denne enheten hopper vi derfor videre til bursdagsfeiringen.",
+    "Kjelleren til mor trenger tastatur og mus. På denne enheten hopper vi derfor videre til bursdagsfeiringen.",
   "reduced-motion":
-    "Rømningsrommet bruker førstepersonsbevegelse. Siden redusert bevegelse er aktivert, hopper vi videre til bursdagsfeiringen.",
+    "Kjelleren til mor bruker førstepersonsbevegelse. Siden redusert bevegelse er aktivert, hopper vi videre til bursdagsfeiringen.",
   "webgl-unavailable":
     "Nettleseren kan ikke starte 3D-rommet. Du kan fortsatt gå videre til bursdagsfeiringen.",
 };

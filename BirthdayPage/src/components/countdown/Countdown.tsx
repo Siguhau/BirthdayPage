@@ -36,6 +36,7 @@ const Countdown = ({ targetDate }: CountdownProps) => {
   return (
     <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
       <FlipClockCountdown
+        hideOnComplete={false}
         to={targetDate}
         labels={["DAGER", "TIMER", "MINUTTER", "SEKUNDER"]}
         digitBlockStyle={digitBlockStyle}

@@ -3,6 +3,7 @@ export const puzzleIds = [
   "just-dance-wasd",
   "corn-chase",
   "photo-timer",
+  "brita-sliding-tiles",
 ] as const;
 
 export type PuzzleId = (typeof puzzleIds)[number];
@@ -46,6 +47,10 @@ export type GameAction =
   | { type: "SOLVE_PUZZLE"; puzzleId: PuzzleId }
   | { type: "SOLVE_WORLD_PUZZLE"; puzzleId: PuzzleId }
   | { type: "PICK_UP_ITEM"; itemId: ItemId }
+  | {
+      type: "REDEEM_CAMERA_REWARD";
+      itemId: "camera" | "camera-battery" | "tripod";
+    }
   | { type: "INSTALL_ITEM"; itemId: ItemId }
   | { type: "ENTER_LASER_CODE"; code: string }
   | { type: "ROTATE_MIRROR"; itemId: MirrorItemId }

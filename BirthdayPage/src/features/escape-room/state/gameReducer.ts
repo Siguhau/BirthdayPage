@@ -1,3 +1,7 @@
+import {
+  getCameraTokenBalance,
+  isCameraReward,
+} from "../puzzles/cameraRewards";
 import { isChestOpen, laserCode, rotateMirror } from "../puzzles/laserPuzzle";
 import { initialGameState, type GameAction, type GameState } from "./gameTypes";
 
@@ -49,10 +53,22 @@ export const gameReducer = (
         ...state,
         solvedPuzzles: [...state.solvedPuzzles, action.puzzleId],
       };
+    case "REDEEM_CAMERA_REWARD":
+      if (
+        state.stage !== "exploring" ||
+        state.activePuzzleId !== null ||
+        !isCameraReward(action.itemId) ||
+        getCameraTokenBalance(state) < 1 ||
+        state.inventory.includes(action.itemId) ||
+        state.installedItems.includes(action.itemId)
+      )
+        return state;
+      return { ...state, inventory: [...state.inventory, action.itemId] };
     case "PICK_UP_ITEM":
       if (
         state.stage !== "exploring" ||
         state.inventory.includes(action.itemId) ||
+        isCameraReward(action.itemId) ||
         state.installedItems.includes(action.itemId)
       ) {
         return state;

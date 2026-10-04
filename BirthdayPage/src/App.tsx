@@ -1,5 +1,6 @@
 import BirthdayTransitionPreview from "./pages/BirthdayTransitionPreview";
-import EscapeRoomPage from "./pages/EscapeRoomPage";
+import CountdownRevealPreview from "./pages/CountdownRevealPreview";
+import EscapeRoomPreview from "./pages/EscapeRoomPreview";
 import LiveBirthdayPage from "./pages/LiveBirthdayPage";
 
 function App() {
@@ -8,11 +9,8 @@ function App() {
     : null;
 
   if (preview === "birthday") return <BirthdayTransitionPreview />;
-  if (preview === "escape-room") {
-    return (
-      <EscapeRoomPage locale="nb-NO" onComplete={() => {}} userName="Runar" />
-    );
-  }
+  if (preview === "teaser") return <CountdownRevealPreview />;
+  if (preview === "escape-room") return <EscapeRoomPreview />;
   return <LiveBirthdayPage />;
 }
 

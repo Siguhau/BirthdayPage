@@ -1,13 +1,15 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { birthdayConfig } from "../birthdayConfig";
-import { useTheme } from "../theme/useTheme";
 import { useBirthdayChecker } from "../utils/useBirthdayChecker";
 import { getNextValidBirthday } from "../utils/birthdayDate";
 import BirthdayPageView from "./BirthdayPageView";
 
+const zeroCountdownDurationMs = 1_000;
+
 const LiveBirthdayPage = () => {
-  const { setTheme } = useTheme();
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [birthdayCountdownComplete, setBirthdayCountdownComplete] =
+    useState(false);
   const nextBirthday = getNextValidBirthday(
     birthdayConfig.birthday,
     birthdayConfig.timeZone,
@@ -17,15 +19,24 @@ const LiveBirthdayPage = () => {
     birthdayConfig.timeZone,
   );
 
-  const page = !isBirthday
-    ? "countdown"
-    : gameCompleted
-      ? "birthday"
-      : "escape-room";
+  useEffect(() => {
+    if (!isBirthday) return;
 
-  useLayoutEffect(() => {
-    setTheme(page === "escape-room" ? "escape-room" : "birthday");
-  }, [page, setTheme]);
+    // Keep zero visible before opening the door, including on a fresh visit.
+    const timeout = window.setTimeout(() => {
+      setBirthdayCountdownComplete(true);
+    }, zeroCountdownDurationMs);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [isBirthday]);
+
+  const page =
+    !isBirthday || !birthdayCountdownComplete
+      ? "countdown"
+      : gameCompleted
+        ? "birthday"
+        : "escape-room";
 
   return (
     <BirthdayPageView

@@ -1,4 +1,3 @@
-import { useTheme } from "../../theme/useTheme";
 import type { FireworksRenderer } from "../birthday/fireworksTypes";
 import type { BirthdayExperiencePage } from "../../pages/birthdayExperiencePage";
 import "./BirthdayPreviewControls.css";
@@ -20,8 +19,6 @@ const BirthdayPreviewControls = ({
   onShowBirthday,
   onShowEscapeRoom,
 }: BirthdayPreviewControlsProps) => {
-  const { setTheme, theme } = useTheme();
-
   return (
     <div
       aria-label="Birthday preview controls"
@@ -34,7 +31,7 @@ const BirthdayPreviewControls = ({
         onClick={onRestartCountdown}
         type="button"
       >
-        Restart 5-second countdown
+        Restart 10-second countdown
       </button>
       <button
         aria-pressed={page === "escape-room"}
@@ -52,28 +49,6 @@ const BirthdayPreviewControls = ({
       >
         Show birthday finale
       </button>
-      <span aria-hidden="true" className="birthday-preview-controls__divider" />
-      <button
-        aria-pressed={theme === "birthday"}
-        className="birthday-preview-controls__button"
-        onClick={() => {
-          setTheme("birthday");
-        }}
-        type="button"
-      >
-        Birthday theme
-      </button>
-      <button
-        aria-pressed={theme === "escape-room"}
-        className="birthday-preview-controls__button"
-        onClick={() => {
-          setTheme("escape-room");
-        }}
-        type="button"
-      >
-        Escape room theme
-      </button>
-      <span aria-hidden="true" className="birthday-preview-controls__divider" />
       <label className="birthday-preview-controls__field">
         <span>Fireworks</span>
         <select

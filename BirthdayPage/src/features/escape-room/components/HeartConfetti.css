@@ -1,0 +1,41 @@
+.heart-confetti {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.heart-confetti__heart {
+  position: absolute;
+  top: -2.5rem;
+  left: var(--heart-left);
+  font-size: var(--heart-size);
+  line-height: 1;
+  opacity: 0;
+  text-shadow: 0 0 8px currentColor;
+  animation: brita-heart-shower var(--heart-duration) ease-in var(--heart-delay)
+    both;
+}
+
+@keyframes brita-heart-shower {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0);
+  }
+  8%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--heart-drift), 85vh) rotate(var(--heart-turn));
+  }
+}
+
+.heart-confetti[data-reduced-motion="true"] .heart-confetti__heart {
+  top: 0.75rem;
+  animation: none;
+  opacity: 0.7;
+}

@@ -7,7 +7,8 @@ export const requestMouseLook = () => {
   }
 
   const request = document.documentElement.requestPointerLock();
-  request.catch(() => {
+  // Older implementations return void instead of a Promise.
+  Promise.resolve(request).catch(() => {
     // The browser can reject pointer lock when the user leaves the page or
     // blocks the permission. The next explicit Resume action can retry it.
   });

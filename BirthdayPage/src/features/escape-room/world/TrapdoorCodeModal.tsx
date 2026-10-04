@@ -29,7 +29,7 @@ const TrapdoorCodeModal = ({ onClose, onUnlock }: TrapdoorCodeModalProps) => {
       onUnlock();
       return;
     }
-    setFeedback("Feil kode. Flytt hver bokstav i JUNAR ett steg frem.");
+    setFeedback("Feil kode.");
     setCode("");
   };
 
@@ -41,14 +41,9 @@ const TrapdoorCodeModal = ({ onClose, onUnlock }: TrapdoorCodeModalProps) => {
         className="escape-room-world__photo-modal escape-room-world__trapdoor-code"
         role="dialog"
       >
-        <p className="escape-room-world__photo-modal-eyebrow">
-          Cæsarlås · K = 1
-        </p>
+        <p className="escape-room-world__photo-modal-eyebrow">Cæsarlås</p>
         <h2 id="trapdoor-code-title">Kjellerlem</h2>
-        <p>
-          Krypter ordet du fant ved lemmen. Flytt hver bokstav ett steg frem i
-          alfabetet.
-        </p>
+        <p>Skriv inn det krypterte passordet.</p>
         <form onSubmit={submit}>
           <label htmlFor="trapdoor-code">Kryptert passord</label>
           <input
