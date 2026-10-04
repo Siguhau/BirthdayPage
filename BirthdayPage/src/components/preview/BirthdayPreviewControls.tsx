@@ -1,6 +1,6 @@
 import type { FireworksRenderer } from "../birthday/fireworksTypes";
 import type { BirthdayExperiencePage } from "../../pages/birthdayExperiencePage";
-import "./BirthdayPreviewControls.css";
+import PreviewControlsPanel from "./PreviewControlsPanel";
 
 type BirthdayPreviewControlsProps = {
   fireworksRenderer: FireworksRenderer;
@@ -20,11 +20,7 @@ const BirthdayPreviewControls = ({
   onShowEscapeRoom,
 }: BirthdayPreviewControlsProps) => {
   return (
-    <div
-      aria-label="Birthday preview controls"
-      className="birthday-preview-controls"
-      role="group"
-    >
+    <PreviewControlsPanel>
       <button
         aria-pressed={page === "countdown"}
         className="birthday-preview-controls__button"
@@ -65,7 +61,7 @@ const BirthdayPreviewControls = ({
           <option value="combined">Combined</option>
         </select>
       </label>
-    </div>
+    </PreviewControlsPanel>
   );
 };
 

@@ -145,6 +145,9 @@ describe("App", () => {
       );
       vi.setSystemTime(new Date("2026-12-17T00:00:00Z"));
       renderApp();
+      if (preview === "teaser" || preview === "birthday") {
+        fireEvent.click(screen.getByText("Preview controls"));
+      }
       if (preview === "teaser") {
         fireEvent.click(
           screen.getByRole("button", { name: "Run final 10 seconds" }),
@@ -292,6 +295,7 @@ describe("App", () => {
     window.history.replaceState({}, "", "/?preview=teaser");
     vi.setSystemTime(new Date("2026-12-16T12:00:00Z"));
     renderApp();
+    fireEvent.click(screen.getByText("Preview controls"));
     fireEvent.click(
       screen.getByRole("button", { name: "Run final 10 seconds" }),
     );
@@ -324,6 +328,7 @@ describe("App", () => {
 
     renderApp();
 
+    fireEvent.click(screen.getByText("Preview controls"));
     expect(
       screen.getByRole("heading", { name: "Tid til Runars bursdag" }),
     ).toBeInTheDocument();

@@ -3,7 +3,21 @@
   z-index: 1000;
   right: 1rem;
   bottom: 1rem;
+  max-width: calc(100vw - 2rem);
+}
+
+.birthday-preview-controls > summary {
+  width: fit-content;
+  margin-left: auto;
+  background: var(--theme-control-surface);
+  box-shadow: var(--theme-surface-shadow);
+}
+
+.birthday-preview-controls__panel {
   display: flex;
+  max-height: calc(100svh - 6rem);
+  margin-top: 0.5rem;
+  overflow-y: auto;
   padding: 0.75rem;
   border-radius: 1rem;
   background: var(--theme-control-surface);
@@ -67,7 +81,12 @@
   .birthday-preview-controls {
     right: 0.5rem;
     bottom: 0.5rem;
-    left: 0.5rem;
+    max-width: calc(100vw - 1rem);
+  }
+
+  .birthday-preview-controls__panel {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .birthday-preview-controls__divider {

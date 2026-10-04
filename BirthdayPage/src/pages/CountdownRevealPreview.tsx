@@ -3,7 +3,7 @@ import { birthdayConfig } from "../birthdayConfig";
 import { getNextValidBirthday } from "../utils/birthdayDate";
 import BirthdayPageView from "./BirthdayPageView";
 import type { BirthdayExperiencePage } from "./birthdayExperiencePage";
-import "../components/preview/BirthdayPreviewControls.css";
+import PreviewControlsPanel from "../components/preview/PreviewControlsPanel";
 
 const CountdownRevealPreview = () => {
   const [replay, setReplay] = useState(0);
@@ -37,7 +37,7 @@ const CountdownRevealPreview = () => {
         page={page}
         targetDate={targetDate}
       />
-      <div className="birthday-preview-controls">
+      <PreviewControlsPanel>
         <button
           className="birthday-preview-controls__button"
           onClick={() => {
@@ -66,7 +66,7 @@ const CountdownRevealPreview = () => {
         >
           Run final 10 seconds
         </button>
-      </div>
+      </PreviewControlsPanel>
     </>
   );
 };
