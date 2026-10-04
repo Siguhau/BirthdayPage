@@ -20,6 +20,7 @@
 
 .page-layout--immersive {
   height: 100dvh;
+  min-height: 100dvh;
 }
 
 .page-layout--immersive > :not(.star-background) {
